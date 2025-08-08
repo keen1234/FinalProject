@@ -1,0 +1,20 @@
+package dev.Bsit1._A.Final_Project;
+
+import org.springframework.web.bind.annotation.GetMapping;
+
+@org.springframework.stereotype.Controller
+public class Controller {
+    @GetMapping("/")
+    public String Home() {
+        return "index";
+    }
+    @GetMapping("/Books")
+    public String Books() {
+        return "books";
+    }
+    @GetMapping("/about")
+    public String About() {
+        return "about";
+    }
+}
+
