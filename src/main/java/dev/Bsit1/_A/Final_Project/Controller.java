@@ -16,5 +16,13 @@ public class Controller {
     public String About() {
         return "about";
     }
+    @GetMapping("/login")
+    public String Login() {
+        return "login";
+    }
+    @GetMapping("signup")
+    public String Signup() {
+        return "signup";
+    }
 }
 
