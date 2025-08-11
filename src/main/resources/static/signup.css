@@ -1,0 +1,91 @@
+body {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .signup-container {
+        background: #fff;
+        padding: 2.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(44, 62, 80, 0.15);
+        width: 100%;
+        max-width: 350px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        animation: fadeIn 0.8s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+
+    .signup-container h2 {
+        text-align: center;
+        color: #2d3e50;
+        margin-bottom: 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    .signup-container input[type="text"],
+    .signup-container input[type="email"],
+    .signup-container input[type="password"] {
+        padding: 0.8rem;
+        border: 1px solid #d1d8e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        outline: none;
+        transition: border 0.2s;
+    }
+
+    .signup-container input:focus {
+        border-color: #fcb69f;
+    }
+
+    .signup-container button {
+        padding: 0.8rem;
+        background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+        transition: background 0.2s;
+    }
+
+    .signup-container button:hover {
+        background: linear-gradient(90deg, #fcb69f 0%, #ffecd2 100%);
+    }
+
+    .signup-container p {
+        text-align: center;
+        font-size: 0.95rem;
+        margin: 0.2rem 0;
+    }
+
+    .signup-container a {
+        color: #fcb69f;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .signup-container a:hover {
+        color: #2d3e50;
+    }
+
+    /* Responsive for mobile */
+    @media (max-width: 500px) {
+        .signup-container {
+            padding: 1.2rem 0.5rem;
+            max-width: 95vw;
+        }
+    }
