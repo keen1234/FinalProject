@@ -1,33 +1,120 @@
 body {
-    background-color: rgba(242, 242, 242, 1);
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8f9fa;
+    color: #2d3e50;
 }
+
 nav {
-    background-color: rgb(37, 37, 37);
-    padding: 10px 0;
+    background: linear-gradient(90deg, #74ebd5 0%, #ACB6E5 100%);
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    padding: 0.5rem 1.5rem;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
 }
+
 nav ul {
     list-style: none;
-    margin: 0 ;
-    padding: 0;
     display: flex;
-    justify-content: center;
+    gap: 1.2rem;
+    margin: 0;
+    padding: 0;
 }
-nav ul.center {
-    margin: 0 auto;
-    padding-right: 275px;
 
-}
-nav ul.left {
+nav ul.far-left {
     margin-right: auto;
+    flex: 0 1 auto;
+    order: 1;
 }
 
-nav ul li {
-    margin: 0 20px;
+nav ul.center {
+    flex: 0 1 auto;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    order: 2;
 }
-nav ul li a {
-    color: rgb(255, 255, 255);
+
+nav a {
     text-decoration: none;
-    font-size: 18px;
+    color: #2d3e50;
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+nav a:hover {
+    background: #74ebd5;
+    color: #fff;
+}
+
+main, .content {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(44,62,80,0.07);
+}
+
+h1, h2, h3 {
+    color: #2d3e50;
+    margin-top: 0;
+}
+
+p {
+    line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+    nav {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.5rem;
+    }
+    nav ul {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+
+    nav ul.right {
+        margin-left: auto;
+        flex: 0 1 auto;
+        order: 3;
+    }
+
+    nav ul.center {
+        margin: 0;
+    }
+    main, .content {
+        padding: 0.7rem;
+        margin: 1rem;
+    }
+}
+
+@media (max-width: 500px) {
+    nav {
+        position: relative;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    nav ul.center {
+        position: static;
+        transform: none;
+        margin: 0;
+        order: 2;
+    }
+
+    nav ul.far-left {
+        order: 1;
+    }
+
+    nav ul.right {
+        order: 3;
+    }
 }
