@@ -20,9 +20,13 @@ public class Controller {
     public String Login() {
         return "login";
     }
-    @GetMapping("signup")
+    @GetMapping("/signup")
     public String Signup() {
         return "signup";
+    }
+    @GetMapping("/reset")
+    public String ResetPassword() {
+        return "reset";
     }
 }
 
