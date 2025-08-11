@@ -48,8 +48,21 @@ body {
         border-color: #fcb69f;
     }
 
+    .signup-container form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+        min-height: 300px;
+        justify-content: flex-start;
+        position: relative;
+    }
+
     .signup-container button {
         padding: 0.8rem;
+        margin-top: auto;
+        align-self: center;
+        width: 80%;
         background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
         color: #fff;
         border: none;

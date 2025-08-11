@@ -43,12 +43,25 @@ body {
         transition: border 0.2s;
     }
 
+    .login-container form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+        min-height: 300px;
+        justify-content: flex-start;
+        position: relative;
+    }
+
     .login-container input:focus {
         border-color: #74ebd5;
     }
 
     .login-container button {
         padding: 0.8rem;
+        margin-top: auto;
+        align-self: center;
+        width: 80%;
         background: linear-gradient(90deg, #74ebd5 0%, #ACB6E5 100%);
         color: #fff;
         border: none;

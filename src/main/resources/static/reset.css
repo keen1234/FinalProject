@@ -46,8 +46,21 @@ body {
         border-color: #cfd9df;
     }
 
+    .reset-container form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+        min-height: 100px;
+        justify-content: flex-start;
+        position: relative;
+    }
+
     .reset-container button {
         padding: 0.8rem;
+        margin-top: auto;
+        align-self: center;
+        width: 80%;
         background: linear-gradient(90deg, #cfd9df 0%, #e2ebf0 100%);
         color: #2d3e50;
         border: none;
