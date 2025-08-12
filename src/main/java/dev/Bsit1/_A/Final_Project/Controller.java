@@ -8,7 +8,7 @@ public class Controller {
     public String Home() {
         return "index";
     }
-    @GetMapping("/Books")
+    @GetMapping("/books")
     public String Books() {
         return "books";
     }
