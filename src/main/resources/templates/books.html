@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
->
+      xmlns:th="http://www.thymeleaf.org">
+      //xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+
 <head>
     <meta charset="UTF-8">
     <title>BarrowBooks</title>
@@ -11,16 +11,9 @@
 <body>
 <!-- Include the navigation from index.html -->
 <div th:replace="~{index :: mainNavbar}"></div>
-
 <!-- Rest of the books page content -->
-<div class="container">
-    <h1>Books</h1>
-    <div class="book-list">
-        <div class="book-item" th:each="book : ${books}">
-            <h2 th:text="${book.title}">Book Title</h2>
-            <p th:text="${book.author}">Author Name</p>
-            <p th:text="${book.description}">Book Description</p>
-            <a th:href="@{/books/{id}(id=${book.id})}" class="btn">View Details</a>
-        </div>
-    </div>
-</div>
+
+<h1>Welcome to BarrowBooks!</h1>
+<p>Browse our collection of books below.</p>
+</body>
+</html>
