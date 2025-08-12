@@ -1,21 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+>
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<nav>
-    <ul class="left">
-        <li><a href="/login">Login</a></li>
-        <li><a href="/signup">Sign up</a></li>
-    </ul >
-    <ul class="center">
-        <li><a href="/">Home</a></li>
-        <li><a href="/Books">BarrowBooks</a></li>
-        <li><a href="/about">About</a></li>
-    </ul>
-</nav>
+<!-- Include the navigation from index.html -->
+<div th:replace="~{index :: mainNavbar}"></div>
+
+<!-- Rest of the about page content -->
 </body>
 </html>

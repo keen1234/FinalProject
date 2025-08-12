@@ -1,25 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+>
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<nav>
-        <!-- Login/Signup links - far left -->
-        <ul class="far-left">
-            <li><a href="/login">Login</a></li>
-            <li><a href="/signup">Signup</a></li>
-        </ul>
+<!-- Define the navigation as a fragment -->
+<nav th:fragment="mainNavbar">
+    <!-- Login/Signup links - far left -->
+    <ul class="far-left" sec:authorize="!isAuthenticated()">
+        <li><a href="/login">Login</a></li>
+        <li><a href="/signup">Signup</a></li>
+    </ul>
 
-        <!-- Main navigation links - center -->
-        <ul class="center">
-            <li><a href="/">Home</a></li>
-            <li><a href="/books">Books</a></li>
-            <li><a href="/about">About</a></li>
-        </ul>
-    </nav>
+   <ul class="far-left" sec:authorize="isAuthenticated()">
+        <li><a href="/logout">Logout</a></li>
+    </ul>
+
+    <!-- Main navigation links - center -->
+    <ul class="center">
+        <li><a href="/">Home</a></li>
+        <li><a href="/books">Books</a></li>
+        <li><a href="/about">About</a></li>
+    </ul>
+
+    <ul class="right" sec:authorize="isAuthenticated()">
+        <li><a href="/profile">Profile</a></li>
+    </ul>
 </nav>
+
+<!-- Rest of the home page content -->
+
 </body>
 </html>
