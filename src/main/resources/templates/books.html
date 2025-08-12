@@ -17,4 +17,18 @@
 <h1>Welcome to BarrowBooks!</h1>
 <p>Here the list of available books in our library.</p>
 </body>
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="book : ${books}">
+        <td th:text="${book.title}">Sample Title</td>
+        <td th:text="${book.author}">Sample Author</td>
+    </tr>
+    </tbody>
+</table>
 </html>
