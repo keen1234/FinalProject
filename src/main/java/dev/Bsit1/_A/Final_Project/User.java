@@ -1,7 +1,7 @@
 
 package dev.Bsit1._A.Final_Project;
 
-import jakarta.persistence.*;
+
 
 
 public class User {

@@ -1,5 +1,6 @@
 package dev.Bsit1._A.Final_Project;
 
+    import org.springframework.security.core.userdetails.User;
     import org.springframework.security.core.userdetails.UserDetails;
     import org.springframework.security.core.userdetails.UserDetailsService;
     import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,22 +10,17 @@ package dev.Bsit1._A.Final_Project;
 
     @Service
     public class UserDetailsServiceImpl implements UserDetailsService {
+        public UserDetailsServiceImpl() {
 
-        private final UserRepository userRepository;
-
-        public UserDetailsServiceImpl(UserRepository userRepository) {
-            this.userRepository = userRepository;
         }
 
 
-        @Override
         public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    user.getPassword(),
-                    new ArrayList<>()
-            );
+            // Return a dummy user with username, password, and empty authorities
+            return new User(username, "password", new ArrayList<>());
         }
     }
+
+
+
+
