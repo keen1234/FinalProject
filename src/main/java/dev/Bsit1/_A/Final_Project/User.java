@@ -3,22 +3,22 @@ package dev.Bsit1._A.Final_Project;
 
 import jakarta.persistence.*;
 
-@Entity
+
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
     private Long id;
 
-    @Column(unique = true, nullable = false)
+
     private String username;
 
-    @Column(unique = true, nullable = false)
+
     private String email; // Ensure this field is not null
 
-    @Column(nullable = false)
+
     private String password;
 
-    @Column(nullable = false)
+
     private String role;
 
     // Getters and setters
