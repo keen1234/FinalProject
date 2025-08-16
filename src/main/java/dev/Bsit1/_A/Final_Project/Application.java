@@ -14,7 +14,7 @@ public class Application {
 
 
 	@Configuration
-	public class WebConfig implements WebMvcConfigurer {
+	public static class WebConfig implements WebMvcConfigurer {
 		@Override
 		public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
 			registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
