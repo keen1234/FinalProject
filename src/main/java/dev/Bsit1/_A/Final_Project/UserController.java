@@ -28,6 +28,6 @@ package dev.Bsit1._A.Final_Project;
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
                 user.setRole("USER");
                 userRepository.save(user);
-                return "redirect:/login";
+                return "redirect:/";
             }
         }
