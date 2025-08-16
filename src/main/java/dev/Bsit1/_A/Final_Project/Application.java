@@ -3,8 +3,6 @@ package dev.Bsit1._A.Final_Project;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
@@ -13,11 +11,7 @@ public class Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-    @GetMapping("/test")
-    @ResponseBody
-    public String test() {
-        return "Controller works!";
-    }
+
 
 	@Configuration
 	public static class WebConfig implements WebMvcConfigurer {

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      >
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Home Page</title>
+    <title>Home</title>
+    <link rel="stylesheet" th:href="@{/css/static.css}" />
 </head>
 <body>
-<h1>Welcome to the Home Page</h1>
+<h1>Welcome to Home Page</h1>
+<a th:href="@{/books}">Books</a> |
+<a th:href="@{/about}">About</a> |
+<a th:href="@{/login}">Login</a>
 </body>
 </html>
