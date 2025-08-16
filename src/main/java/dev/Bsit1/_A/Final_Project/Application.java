@@ -13,12 +13,12 @@ public class Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-
     @GetMapping("/test")
     @ResponseBody
     public String test() {
         return "Controller works!";
     }
+
 	@Configuration
 	public static class WebConfig implements WebMvcConfigurer {
 		@Override
