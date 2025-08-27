@@ -10,7 +10,25 @@
     <a href="/" class="nav-link active">Home</a>
     <a href="/book" class="nav-link">Book</a>
     <a href="/about" class="nav-link">About</a>
-
 </nav>
+<h1>Book List</h1>
+
+<div>
+    <a href="/book?sortBy=title"><button>Sort by Title</button></a>
+    <a href="/book?sortBy=author"><button>Sort by Author</button></a>
+</div>
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+    </tr>
+    <!-- Loop through books -->
+    <th:block th:each="book : ${books}">
+        <tr>
+            <td th:text="${book.title}"></td>
+            <td th:text="${book.author}"></td>
+        </tr>
+    </th:block>
+</table>
 </body>
 </html>
