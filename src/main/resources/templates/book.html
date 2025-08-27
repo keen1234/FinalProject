@@ -22,7 +22,7 @@
         <th>Title</th>
         <th>Author</th>
     </tr>
-    <!-- Loop through books -->
+
     <th:block th:each="book : ${books}">
         <tr>
             <td th:text="${book.title}"></td>
