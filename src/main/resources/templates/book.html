@@ -2,46 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>book</title>
-    <link rel="stylesheet" href="/css/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book</title>
     <link rel="stylesheet" href="/css/book.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-40 min-h-screen">
+<body class="bg-gray-50 min-h-screen">
 <nav class="navbar">
     <a href="/" class="nav-link">Home</a>
-    <a href="/book" class="nav-link active">Book</a>
-    <a href="/about" class="nav-link">About</a>
+    <a href="/book" class="nav-link">Book</a>
+    <a href="/about" class="nav-link active">About</a>
 </nav>
-<div class="modal-content">
-    <div class="p-6">
-        <button id="closeDetail" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 rounded-full p-2">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="flex flex-col lg:flex-row gap-6">
-            <div class="lg:w-1/3">
-                <img id="detailImage" src="" alt="" class="w-full h-64 lg:h-96 object-cover rounded-lg shadow-lg">
+<header class="header-gradient">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">📚 BookBrowser</h1>
+                <p class="text-blue-100">Discover, Explore, and Organize Your Reading Journey</p>
             </div>
-            <div class="lg:w-2/3">
-                <h2 id="detailTitle" class="text-3xl font-bold text-gray-800 mb-2"></h2>
-                <p id="detailAuthor" class="text-xl text-gray-600 mb-4"></p>
-                <div id="detailGenres" class="flex flex-wrap gap-2 mb-4"></div>
-                <p id="detailDate" class="text-gray-500 mb-6"></p>
-                <p id="detailDescription" class="text-gray-700 leading-relaxed mb-6"></p>
-                <div class="flex gap-3">
-                    <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-book-open mr-2"></i>Read Now
-                    </button>
-                    <button class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        <i class="fas fa-bookmark mr-2"></i>Save
+            <div class="w-full md:w-1/3">
+                <div class="relative">
+                    <label for="searchInput"></label><input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Search books, authors, or genres..."
+                            class="w-full px-4 py-3 rounded-lg bg-white/90 text-gray-800 border-none focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                    >
+                    <button class="absolute right-3 top-3 text-gray-400 hover:text-blue-600">
+                        <i class="fas fa-search"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-</div>
+</header>
+
+<!-- Main Content -->
+<main class="container mx-auto px-4 py-8">
+    <!-- Sorting Controls -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h2 class="text-xl font-semibold text-gray-800">Sort Books By:</h2>
+            <div class="flex flex-wrap gap-2">
+                <button class="sort-btn" data-sort="title">
+                    <i class="fas fa-font mr-2"></i>Title
+                </button>
+                <button class="sort-btn" data-sort="author">
+                    <i class="fas fa-user mr-2"></i>Author
+                </button>
+                <button class="sort-btn" data-sort="date">
+                    <i class="fas fa-calendar mr-2"></i>Date
+                </button>
+                <div class="relative">
+                    <label for="genreSort"></label><select id="genreSort" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 border-none focus:ring-2 focus:ring-blue-300 appearance-none pr-8">
+                        <option value="">All Genres</option>
+                        <option value="fiction">Fiction</option>
+                        <option value="mystery">Mystery</option>
+                        <option value="sci-fi">Science Fiction</option>
+                        <option value="fantasy">Fantasy</option>
+                        <option value="biography">Biography</option>
+                        <option value="history">History</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-500 pointer-events-none"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Books Grid -->
+    <div id="booksGrid" class="book-grid gap-6 mb-8">
+        <!-- Books will be dynamically inserted here -->
+    </div>
+
+    <!-- Book Detail View -->
+    <div id="bookDetail" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6">
+                <button id="closeDetail" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 rounded-full p-2">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="lg:w-1/3">
+                        <img id="detailImage" src="" alt="" class="w-full h-64 lg:h-96 object-cover rounded-lg shadow-lg">
+                    </div>
+                    <div class="lg:w-2/3">
+                        <h2 id="detailTitle" class="text-3xl font-bold text-gray-800 mb-2"></h2>
+                        <p id="detailAuthor" class="text-xl text-gray-600 mb-4"></p>
+                        <div id="detailGenres" class="flex flex-wrap gap-2 mb-4"></div>
+                        <p id="detailDate" class="text-gray-500 mb-6"></p>
+                        <p id="detailDescription" class="text-gray-700 leading-relaxed mb-6"></p>
+                        <div class="flex gap-3">
+                            <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-book-open mr-2"></i>Read Now
+                            </button>
+                            <button class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-bookmark mr-2"></i>Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
+
 <!-- Loading Spinner -->
 <div id="loading" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 hidden">
     <div class="text-center">
@@ -49,39 +113,7 @@
         <p class="text-gray-600">Loading books...</p>
     </div>
 </div>
-<div id="booksContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"></div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const loading = document.getElementById('loading');
-        loading.classList.remove('hidden');
-
-        fetch('http://localhost:8081/api/books')
-            .then(response => response.json())
-            .then(data => {
-                loading.classList.add('hidden');
-                const booksContainer = document.getElementById('booksContainer');
-                booksContainer.innerHTML = '';
-                data.forEach(book => {
-                    const bookDiv = document.createElement('div');
-                    bookDiv.className = 'book-card p-4 flex flex-col';
-                    bookDiv.innerHTML = `
-                    <img src="${book.imageUrl || ''}" alt="${book.title || ''}" style="height:80px;object-fit:cover;" class="w-full rounded mb-4">
-                    <h3 class="text-xl font-bold mb-2">${book.title || ''}</h3>
-                    <p class="text-gray-600 mb-2">${book.author || ''}</p>
-                    <div class="flex flex-wrap gap-2 mb-2">
-                        ${(book.genres || []).map(genre => `<span class="genre-badge">${genre}</span>`).join('')}
-                    </div>
-                    <p class="text-gray-500 mb-2">${book.publishedDate || ''}</p>
-                    <p class="text-gray-700 mb-2">${book.description || ''}</p>
-                `;
-                    booksContainer.appendChild(bookDiv);
-                });
-            })
-            .catch(error => {
-                loading.classList.add('hidden');
-                console.error('Error loading books:', error);
-            });
-    });
-</script>
+<script src="Scripts/book.js"></script>
 </body>
 </html>
+

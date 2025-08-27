@@ -4,13 +4,13 @@ package com.example.FinalProject.model;
             import java.util.List;
 
             public class Book {
-                private Long id;
-                private String title;
-                private String author;
-                private LocalDate publishedDate;
-                private List<String> genres;
-                private String description;
-                private String imageUrl;
+                private final Long id;
+                private final String title;
+                private final String author;
+                private final LocalDate publishedDate;
+                private final List<String> genres;
+                private final String description;
+                private final String imageUrl;
 
                 public Book(Long id, String title, String author, LocalDate publishedDate,
                             List<String> genres, String description, String imageUrl) {

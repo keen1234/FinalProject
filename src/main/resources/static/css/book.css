@@ -7,6 +7,26 @@ body {
     min-height: 100vh;
 }
 
+.navbar {
+    display: flex;
+    background: #333;
+    padding: 0.5em;
+}
+.nav-link {
+    color: #fff;
+    padding: 0.75em 1.5em;
+    text-decoration: none;
+    transition: background 0.3s;
+    border-radius: 4px;
+    margin-right: 0.5em;
+}
+.nav-link:hover {
+    background: #555;
+}
+.nav-link.active {
+    background: #007bff;
+}
+
 /* Book Card Styles */
 .book-card {
     transition: all 0.3s ease;
