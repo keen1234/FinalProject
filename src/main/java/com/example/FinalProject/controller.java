@@ -18,4 +18,6 @@ public class controller {
     public String about() {
         return "about";
     }
+    @GetMapping("/calendar")
+    public String calendar() { return "calendar"; }
 }
