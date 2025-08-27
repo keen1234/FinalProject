@@ -82,6 +82,11 @@ const genreSort = document.getElementById('genreSort');
 const bookDetail = document.getElementById('bookDetail');
 const closeDetail = document.getElementById('closeDetail');
 const loading = document.getElementById('loading');
+const searchContainer = document.getElementById('search-container');
+const searchBtn = document.getElementById('searchBtn');
+const clearBtn = document.getElementById('clearBtn');
+const searchSuggestions = document.getElementById('searchSuggestions');
+const searchLoading = document.getElementById('searchLoading');
 
 // State variables
 let currentSort = 'title';
@@ -138,6 +143,49 @@ function setupEventListeners() {
     bookDetail.addEventListener('click', (e) => {
         if (e.target === bookDetail) {
             hideBookDetail();
+        }
+    });
+
+    searchBtn.addEventListener('click', () => {
+        searchContainer.classList.add('expanded');
+        searchInput.focus();
+    });
+
+    searchInput.addEventListener('focus', () => {
+        searchContainer.classList.add('expanded');
+    });
+
+    searchInput.addEventListener('blur', () => {
+        if (!searchInput.value.trim()) {
+            setTimeout(() => {
+                searchContainer.classList.remove('expanded');
+            }, 200);
+        }
+    });
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+        searchSuggestions.classList.remove('show');
+        filterBooks('');
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const value = e.target.value.toLowerCase();
+        filterBooks(value);
+        // Optionally show/hide suggestions here
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && searchContainer.classList.contains('expanded')) {
+            searchInput.value = '';
+            searchInput.blur();
+            searchContainer.classList.remove('expanded');
+        }
+        if (e.ctrlKey && e.key === 'k') {
+            e.preventDefault();
+            searchContainer.classList.add('expanded');
+            searchInput.focus();
         }
     });
 }
