@@ -16,11 +16,9 @@ public class controller {
         return "book";
     }
     @GetMapping("/about")
-    public String about() { return "about"; }
-    @GetMapping("/login")
-    public String login() { return "user-login"; }
-    @GetMapping("/sign-up")
-    public String signup() { return "user-signup"; }
-    @GetMapping("/userprofile")
-    public String userprofile() { return "userprofile"; }
+    public String about() {
+        return "about";
+    }
+
+    
 }
