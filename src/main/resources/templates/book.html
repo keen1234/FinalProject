@@ -18,17 +18,20 @@
     <a href="/book?sortBy=author"><button>Sort by Author</button></a>
 </div>
 <table>
+    <thead>
     <tr>
         <th>Title</th>
         <th>Author</th>
     </tr>
-
+    </thead>
+    <tbody>
     <th:block th:each="book : ${books}">
         <tr>
             <td th:text="${book.title}"></td>
             <td th:text="${book.author}"></td>
         </tr>
     </th:block>
+    </tbody>
 </table>
 </body>
 </html>
