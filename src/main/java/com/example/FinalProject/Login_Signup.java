@@ -5,9 +5,16 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class Login_Signup {
-    @GetMapping("/sign-up")
-    public String signup() { return "sign-up"; }
+    @GetMapping("/user-login")
+    public String showLoginPage() {
+        return "user-login";
+    }
 
-    @GetMapping("/login")
-    public String login() { return "login"; }
+    @GetMapping("/user-signup")
+    public String showSignupPage() {
+        return "user-signup";
+    }
 }
+
+
+
