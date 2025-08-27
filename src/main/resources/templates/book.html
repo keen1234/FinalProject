@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>books</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/book.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/book" class="nav-link active">Book</a>
+    <a href="/about" class="nav-link">About</a>
+</nav>
+<!-- Header -->
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>📚 BookBrowser</h1>
+                <p>Discover, Explore, and Organize Your Reading Journey</p>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search books, authors, or genres...">
+                <button class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="container">
+        <!-- Sorting Controls -->
+        <div class="sorting-controls">
+            <h2>Sort Books By:</h2>
+            <div class="sort-buttons">
+                <button class="sort-btn" data-sort="title">
+                    <i class="fas fa-font"></i> Title
+                </button>
+                <button class="sort-btn" data-sort="author">
+                    <i class="fas fa-user"></i> Author
+                </button>
+                <button class="sort-btn" data-sort="date">
+                    <i class="fas fa-calendar"></i> Date
+                </button>
+                <select id="genreSort">
+                    <option value="">All Genres</option>
+                    <option value="fiction">Fiction</option>
+                    <option value="mystery">Mystery</option>
+                    <option value="sci-fi">Science Fiction</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="biography">Biography</option>
+                    <option value="history">History</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Books Grid -->
+        <div id="booksGrid" class="books-grid">
+            <!-- Books will be dynamically inserted here -->
+        </div>
+
+        <!-- Book Detail View -->
+        <div id="bookDetail" class="book-detail-modal">
+            <div class="modal-content">
+                <button id="closeDetail" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="book-detail-content">
+                    <div class="book-image-container">
+                        <img id="detailImage" src="" alt="">
+                    </div>
+                    <div class="book-info-container">
+                        <h2 id="detailTitle"></h2>
+                        <p id="detailAuthor"></p>
+                        <div id="detailGenres" class="genres-container"></div>
+                        <p id="detailDate"></p>
+                        <p id="detailDescription"></p>
+                        <div class="action-buttons">
+                            <button class="read-btn">
+                                <i class="fas fa-book-open"></i> Read Now
+                            </button>
+                            <button class="save-btn">
+                                <i class="fas fa-bookmark"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading books...</p>
+        </div>
+    </div>
+</main>
+
+<script src="/Scripts/book.js"></script>
+</body>
+</html>
