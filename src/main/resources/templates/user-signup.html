@@ -1,10 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>User Signup</title>
+    <title>LOGIN</title>
+    <link rel="stylesheet" href="/css/logs.css">
+    <meta name="viewport" content="device-width, initial-scale=1.0">
 </head>
 <body>
+<nav>
+    <ul>
+        <li><a href="/user-login">LOGIN</a></li>
+        <li><a class="active"href="/user-signup">SIGN UP</a></li>
+    </ul>
+</nav>
+<br>
+<div class="container">
+    <div class="card">
+        <h2>Sign Up</h2>
+        <form action="#">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" placeholder="Enter your Email id" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
 
+            <button type="submit">Sign Up</button>
+            <a href="/user-login">already registered</a>
+        </form>
+    </div>
+</div>
 </body>
+<script>
+    const fileInput = document.getElementById('profilepic');
+    const avatarImg = document.getElementById('avatar');
+    const removebtn = document.getElementById('removebtn');
+    fileInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    removebtn.addEventListener('click',function(){
+        fileInput.value='';
+        avatarImg.src='https://cdn-icons-png.flaticon.com/512/747/747376.png';
+
+    });
+</script>
 </html>

@@ -1,0 +1,170 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #959595;
+    font-family: Arial, sans-serif;
+}
+
+nav {
+    background-color: white;
+    padding: 10px 30px;
+    position: sticky;
+    top: 0;
+}
+
+nav ul {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+}
+
+nav li a {
+    position: relative;
+    display: inline-block;
+    padding: 15px 16px;
+    text-decoration: none;
+    color: black;
+    font-size: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 5px;
+}
+
+nav li a:hover {
+    background-color: #959595b2;
+    color: rgb(255, 255, 255);
+}
+
+nav li a::after {
+    content: "";
+    position: absolute;
+    bottom: 8px;
+    left: 5%;
+    height: 2px;
+    width: 0;
+    background-color: rgb(0, 0, 0);
+    transition: width 0.3s ease-in-out;
+}
+nav li a:hover::after {
+    width: 90%;
+}
+.active{
+    background-color: #d6d6d6b2;
+
+}
+.container {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+}
+
+.card {
+    background-color: white;
+    padding: 40px;
+    border-radius: 9px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+}
+
+.card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    text-decoration: underline;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    margin-left: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.input-group input {
+    width:85%;
+    padding: 13px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 15px;
+}
+.card a{
+    text-decoration: underline;
+    margin-left: 40PX;
+    color: black;
+}
+button {
+    width: 50%;
+    padding: 12px;
+    margin-left: 15px;
+    background-color: #b0b0b0ad;
+    border: none;
+    color: rgb(0, 0, 0);
+    font-size: 18px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #7b7b7bb2;
+    color: #fff;
+}
+.profile-upload {
+    display: flex;
+    flex-direction: column;
+    align-items:left;
+}
+.profile-upload label{
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+.avatar-preview {
+    cursor: pointer;
+    display: inline-block;
+    border-radius: 50px;
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+}
+.avatar-preview img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #838383;
+    transition: 0.3s ease;
+    pointer-events: none;
+}
+.avatar-preview img:hover {
+    opacity: 0.8;
+}
+.profile-upload button{
+    color:#ffffff;
+    background: #d61313;
+    max-width: 150px;
+    margin-left: 0%;
+}
+@media (max-width: 600px) {
+    .card {
+        padding: 20px;
+        max-width:80%;
+    }
+    .card a{
+        margin-left: 30px;
+        font-size: 14px;
+    }
+    button {
+        font-size: 15px;
+    }
+    .input-group{
+        font-size: 13px;
+    }
+}

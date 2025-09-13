@@ -11,14 +11,15 @@ public class controller {
     public String home() {
         return "home";
     }
+
     @GetMapping("/book")
     public String book() {
         return "book";
     }
+
     @GetMapping("/about")
     public String about() {
         return "about";
     }
 
-    
 }
