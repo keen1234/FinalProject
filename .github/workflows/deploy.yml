@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           source: "build/libs/*.jar"
-          target: "/opt/librows/"
+          target: "./opt/librows/Liborws-0.0.1.jar"
 
       - name: Restart service
         uses: appleboy/ssh-action@v0.1.8
