@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           source: "build/libs/*.jar"
-          target: "/opt/librows/librows.jar"
+          target: "/opt/librows/"
 
       - name: Restart service
         uses: appleboy/ssh-action@v0.1.8
@@ -40,4 +40,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
+            sudo mv /opt/librows/*.jar /opt/librows/librows.jar
+            sudo systemctl daemon-reload
             sudo systemctl restart librows
+            sudo systemctl status librows --no-pager -l
