@@ -35,26 +35,4 @@
 
 
 </body>
-
-<script>
-fetch('/login', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        userid: document.getElementById('userid').value,
-        password: document.getElementById('password').value
-    })
-})
-.then(response => response.json())
-.then(data => {
-    // Handle response from controller
-    if (data.success) {
-        window.location.href = '/home.html';
-    } else {
-        alert('Login failed');
-    }
-});
-</script>
 </html>

@@ -31,24 +31,4 @@
     </div>
 </div>
 </body>
-<script>
-    const fileInput = document.getElementById('profilepic');
-    const avatarImg = document.getElementById('avatar');
-    const removebtn = document.getElementById('removebtn');
-    fileInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarImg.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-    removebtn.addEventListener('click',function(){
-        fileInput.value='';
-        avatarImg.src='https://cdn-icons-png.flaticon.com/512/747/747376.png';
-
-    });
-</script>
 </html>
