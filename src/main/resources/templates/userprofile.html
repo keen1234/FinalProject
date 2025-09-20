@@ -1,10 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>User Profile</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/userprofile.css">
 </head>
 <body>
-
+<nav class="navbar" aria-label="Main Navigation">
+    <div class="navbar-content">
+        <div class="nav-center">
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/book" class="nav-link">Book</a></li>
+                <li><a href="/about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+        <div class="nav-auth">
+            <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
+            <div class="profile-menu" sec:authorize="isAuthenticated()">
+                <button class="profile-btn" onclick="document.getElementById('profileDropdown').classList.toggle('show')">
+                    <span class="profile-logo" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</span>
+                </button>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <div class="profile-info">
+                        <div class="profile-logo-large" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</div>
+                        <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong><br>
+                        <span th:text="${#authentication.principal.student.email}">user@email.com</span>
+                    </div>
+                    <hr>
+                    <a href="/userprofile" class="profile-link">Profile</a>
+                    <div style="height: 30px;"></div>
+                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+<main class="profile-main">
+    <section class="profile-section">
+        <div class="profile-header">
+            <div class="profile-logo-large" th:text="${student.firstName.substring(0,1)}">U</div>
+            <h2 th:text="${student.firstName + ' ' + student.lastName}">User Name</h2>
+            <p th:text="${student.email}">user@email.com</p>
+        </div>
+        <div class="profile-details">
+            <h3>Account Details</h3>
+            <ul>
+                <li><strong>First Name:</strong> <span th:text="${student.firstName}">First</span></li>
+                <li><strong>Last Name:</strong> <span th:text="${student.lastName}">Last</span></li>
+                <li><strong>Email:</strong> <span th:text="${student.email}">Email</span></li>
+                <li><strong>Course Code:</strong> <span th:text="${student.course.courseCode}">Course Code</span></li>
+                <li><strong>Category:</strong> <span th:text="${student.course.category}">Category</span></li>
+                <!-- Add more fields as needed -->
+            </ul>
+        </div>
+    </section>
+</main>
+<script>
+document.addEventListener('click', function(e) {
+    var dropdown = document.getElementById('profileDropdown');
+    var btn = document.querySelector('.profile-btn');
+    if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+</script>
 </body>
 </html>

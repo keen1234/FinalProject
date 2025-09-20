@@ -13,12 +13,33 @@ body {
     padding: 1rem 2rem;
     color: #fff;
 }
+.navbar-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+.nav-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .nav-links {
     list-style: none;
     display: flex;
     gap: 2rem;
     margin: 0;
     padding: 0;
+}
+.nav-auth {
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 1rem;
 }
 .nav-link {
     color: #fff;
@@ -91,4 +112,70 @@ body {
 }
 .signup-container a:hover, .login-container a:hover {
     text-decoration: underline;
+}
+.profile-menu { position: relative; }
+.profile-btn {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.profile-logo {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #fff;
+}
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: #222;
+    color: #fff;
+    min-width: 220px;
+    border-radius: 8px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+    z-index: 100;
+    padding: 1rem;
+    padding-bottom: 3rem;
+    height: 260px;
+}
+.profile-dropdown.show { display: block; }
+.profile-info { margin-bottom: 1rem; text-align: center; }
+.profile-logo-large {
+    background: #3b82f6;
+    color: #fff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 0.5rem auto;
+    font-weight: bold;
+}
+.profile-link {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    border-radius: 4px;
+    transition: background 0.2s;
+    text-align: center;
+    position: relative;
+}
+.profile-link:hover { background: #3b82f6; }
+.logout {
+    color: #ff4d4f;
+    font-weight: bold;
+    background: none;
+    margin-top: auto;
 }

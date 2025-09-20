@@ -93,4 +93,15 @@ public class StudentController {
         return "home";
     }
 
+    @GetMapping("/userprofile")
+    public String userProfile(Authentication authentication, Model model) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        StudentDetails userDetails = (StudentDetails) authentication.getPrincipal();
+        Student student = userDetails.getStudent();
+        model.addAttribute("student", student);
+        return "userprofile";
+    }
+
 }

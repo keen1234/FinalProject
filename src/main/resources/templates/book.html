@@ -10,20 +10,38 @@
 </head>
 <body>
 <nav class="navbar" aria-label="Main Navigation">
-    <ul class="nav-links">
-        <li><a href="/" class="nav-link">Home</a></li>
-        <li><a href="/book" class="nav-link active">Book</a></li>
-        <li><a href="/about" class="nav-link">About</a></li>
-        <li><a href="/user-login" class="nav-link">Login</a></li>
-    </ul>
-    <div sec:authorize="isAnonymous()">
-        <a href="/login">Login</a>
+    <div class="navbar-content">
+        <div class="nav-center">
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/book" class="nav-link active">Book</a></li>
+                <li><a href="/about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+        <div class="nav-auth">
+            <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
+            <div class="profile-menu" sec:authorize="isAuthenticated()">
+                <button class="profile-btn" onclick="document.getElementById('profileDropdown').classList.toggle('show')">
+                    <span class="profile-logo" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</span>
+                </button>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <div class="profile-info">
+                        <div class="profile-logo-large" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</div>
+                        <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong><br>
+                        <span th:text="${#authentication.principal.student.email}">user@email.com</span>
+                    </div>
+                    <hr>
+                    <a href="/userprofile" class="profile-link">Profile</a>
+                    <div style="height: 30px;"></div>
+                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div sec:authorize="isAuthenticated()">
-        <a href="/logout">Logout</a>
-    </div>
-
+</nav>
+<!-- Separation between navbar and search bar -->
+<div style="height: 1.5rem;"></div>
+<div class="search-bar-wrapper">
     <div class="search-container" id="search-container">
         <label for="searchInput" class="visually-hidden">Search Books</label>
         <input type="text" id="searchInput" placeholder="Search books">
@@ -39,7 +57,7 @@
             <!-- Suggestions will be added dynamically -->
         </div>
     </div>
-</nav>
+</div>
 
 
 <!-- Main Content -->
@@ -114,5 +132,14 @@
 </main>
 
 <script src="/Scripts/book.js"></script>
+<script>
+document.addEventListener('click', function(e) {
+    var dropdown = document.getElementById('profileDropdown');
+    var btn = document.querySelector('.profile-btn');
+    if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+</script>
 </body>
 </html>
