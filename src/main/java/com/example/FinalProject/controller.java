@@ -22,14 +22,16 @@ public class controller {
         return "about";
     }
 
-    @GetMapping("/user-login")
+    @GetMapping("/login")
     public String showLoginPage() {
-        return "user-login";
+        return "login";
     }
 
     @GetMapping("/user-signup")
     public String showSignupPage() {
         return "user-signup";
     }
+
+
 
 }
