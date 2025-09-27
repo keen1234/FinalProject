@@ -226,6 +226,14 @@ body {
     h1, h2 {
         font-size: 1.3em;
     }
+
+    form {
+        padding: 15px;
+    }
+
+    button {
+        padding: 12px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -248,22 +256,44 @@ body {
     table {
         font-size: 0.9em;
     }
+    /* Ensure table is always visible and styled */
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border: 1px solid #ddd;
+        margin-bottom: 1.5rem;
+    }
+    .table-container th, .table-container td {
+        border: 1px solid #ddd;
+        padding: 0.75rem;
+        text-align: left;
+        background: #fff;
+        color: #222;
+        display: table-cell;
+    }
+    .table-container thead {
+        background: #f3f4f6;
+    }
+    .table-container tr {
+        display: table-row;
+    }
+    .table-container tbody tr:hover {
+        background: #f9fafb;
+    }
     .table-container table {
         display: block;
-        width: 100%;
         overflow-x: auto;
-        border-collapse: collapse;
-    }
-    .table-container thead, .table-container tbody, .table-container tr {
-        display: block;
         width: 100%;
     }
     .table-container th, .table-container td {
         min-width: 120px;
         box-sizing: border-box;
         padding: 0.5rem;
-        display: block;
-        width: 100%;
+        display: table-cell;
+    }
+    .table-container tr {
+        display: table-row;
     }
 }
 
@@ -699,6 +729,14 @@ body {
     h1, h2 {
         font-size: 1.3em;
     }
+
+    form {
+        padding: 15px;
+    }
+
+    button {
+        padding: 12px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -721,23 +759,103 @@ body {
     table {
         font-size: 0.9em;
     }
+    /* Ensure table is always visible and styled */
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border: 1px solid #ddd;
+        margin-bottom: 1.5rem;
+    }
+    .table-container th, .table-container td {
+        border: 1px solid #ddd;
+        padding: 0.75rem;
+        text-align: left;
+        background: #fff;
+        color: #222;
+        display: table-cell;
+    }
+    .table-container thead {
+        background: #f3f4f6;
+    }
+    .table-container tr {
+        display: table-row;
+    }
+    .table-container tbody tr:hover {
+        background: #f9fafb;
+    }
     .table-container table {
         display: block;
-        width: 100%;
         overflow-x: auto;
-        border-collapse: collapse;
-    }
-    .table-container thead, .table-container tbody, .table-container tr {
-        display: block;
         width: 100%;
     }
     .table-container th, .table-container td {
         min-width: 120px;
         box-sizing: border-box;
         padding: 0.5rem;
-        display: block;
-        width: 100%;
+        display: table-cell;
     }
+    .table-container tr {
+        display: table-row;
+    }
+}
+
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+input[type="text"], input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Add styles for the cancel button */
+button[type="button"] {
+    background-color: #f44336; /* Red background */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Add padding */
+    text-align: center; /* Center text */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Inline-block layout */
+    font-size: 16px; /* Font size */
+    margin: 4px 2px; /* Margin */
+    cursor: pointer; /* Pointer cursor */
+    border-radius: 4px; /* Rounded corners */
+}
+
+button[type="button"]:hover {
+    background-color: #d32f2f; /* Darker red on hover */
 }
 
 /* Utility Classes */

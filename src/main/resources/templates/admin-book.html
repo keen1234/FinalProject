@@ -13,7 +13,7 @@
         <div class="nav-center">
             <ul class="nav-links">
                 <li><a href="/admin-home" class="nav-link">Home</a></li>
-                <li><a href="/admin-book" class="nav-link active">Book</a></li>
+                <li><a href="/admin/book" class="nav-link active">Book</a></li>
             </ul>
         </div>
         <div class="nav-auth">
@@ -285,5 +285,12 @@
             }
         };
     });
+</script>
+<script>
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
 </script>
 </html>

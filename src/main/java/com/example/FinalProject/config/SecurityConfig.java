@@ -60,6 +60,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form
                 .loginPage("/login")
+                .defaultSuccessUrl("/admin/book", true)
                 .usernameParameter("email")
                 .permitAll()
             )

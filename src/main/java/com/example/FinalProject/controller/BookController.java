@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -78,8 +79,12 @@ public class BookController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/book")
-    public String adminBookPage(Model model, Authentication authentication) {
+    public String showBooks(Model model, Authentication authentication) {
         List<Book> books = bookRepository.findAll();
+        System.out.println("Books fetched: " + books.size());
+        for (Book b : books) {
+            System.out.println("Book: " + b.getTitle() + ", Author: " + b.getAuthor());
+        }
         model.addAttribute("books", books);
         model.addAttribute("editBook", null);
         List<Reservation> pendingReservations = reservationRepository.findByStatus(Reservation.Status.pending);
@@ -108,7 +113,17 @@ public class BookController {
     @PostMapping("/admin/book/add")
     public String addBook(@ModelAttribute Book book) {
         book.setStatus(Book.Status.available);
-        bookRepository.save(book);
+        if (book.getDatePublish() == null) {
+            book.setDatePublish(LocalDate.now()); // default value if not filled
+        }
+        Book saved = bookRepository.save(book);
+        System.out.println("Saved book ID: " + saved.getId());
+        System.out.println("Book added: " + book.getTitle() + " by " + book.getAuthor());
+        List<Book> books = bookRepository.findAll();
+        System.out.println("Books after add: " + books.size());
+        for (Book b : books) {
+            System.out.println("Book: " + b.getTitle() + ", Author: " + b.getAuthor());
+        }
         return "redirect:/admin/book";
     }
 
@@ -153,6 +168,15 @@ public class BookController {
             bookRepository.delete(book);
         }
         return "redirect:/admin/book";
+    }
+
+    @GetMapping("/admin/book/edit/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String showEditBookPage(@PathVariable Long id, Model model) {
+        Book book = bookRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid book Id: " + id));
+        model.addAttribute("book", book);
+        return "edit-book"; // Ensure you have an `edit-book.html` template
     }
 
     @PostMapping("/api/reserve")

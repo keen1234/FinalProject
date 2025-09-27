@@ -29,6 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation ("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
     implementation("org.projectlombok:lombok")
+    implementation("javax.servlet:javax.servlet-api:4.0.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")

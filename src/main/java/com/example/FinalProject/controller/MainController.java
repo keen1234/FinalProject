@@ -42,33 +42,9 @@ public class MainController {
         return "user-signup";
     }
     @GetMapping("/admin-book")
-    public String adminBookPage(Authentication authentication, Model model) {
-        Map<String, Object> admin = new HashMap<>();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof AdminDetails) {
-                com.example.FinalProject.model.admin adminObj = ((AdminDetails) principal).getAdmin();
-                admin.put("name", adminObj.getName());
-                admin.put("email", adminObj.getEmail());
-                admin.put("status", adminObj.getStatus() != null ? adminObj.getStatus() : "Active");
-            } else if (principal instanceof com.example.FinalProject.model.admin) {
-                com.example.FinalProject.model.admin adminObj = (com.example.FinalProject.model.admin) principal;
-                admin.put("name", adminObj.getName());
-                admin.put("email", adminObj.getEmail());
-                admin.put("status", adminObj.getStatus() != null ? adminObj.getStatus() : "Active");
-            } else if (principal instanceof UserDetails) {
-                UserDetails userDetails = (UserDetails) principal;
-                admin.put("name", userDetails.getUsername());
-                admin.put("email", ""); // Fallback for basic UserDetails
-                admin.put("status", "Active");
-            } else if (principal instanceof String) {
-                admin.put("name", principal);
-                admin.put("email", "");
-                admin.put("status", "Active");
-            }
-        }
-        model.addAttribute("admin", admin);
-        return "admin-book";
+    public String adminBookPage() {
+        // Ensure we always hit the controller that populates the books list
+        return "redirect:/admin/book";
     }
     @GetMapping("/admin-home")
     public String adminHomePage(Authentication authentication, Model model, HttpSession session) {
