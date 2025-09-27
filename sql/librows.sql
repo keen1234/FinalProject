@@ -1,9 +1,9 @@
-    -- phpMyAdmin SQL Dump
+-- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 27, 2025 at 07:56 PM
+-- Generation Time: Sep 27, 2025 at 11:06 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -61,6 +61,13 @@ CREATE TABLE `book` (
   `time` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `book`
+--
+
+INSERT INTO `book` (`id`, `title`, `author`, `date_publish`, `genre`, `language`, `description`, `status`, `country`, `time`) VALUES
+(7, 'test', 'test', '1111-11-11', 'test', 'test', '', 'available', NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -70,6 +77,23 @@ CREATE TABLE `book` (
 CREATE TABLE `book_reservers` (
   `book_id` bigint(20) NOT NULL,
   `student_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `borrow_record`
+--
+
+CREATE TABLE `borrow_record` (
+  `id` bigint(20) NOT NULL,
+  `student_id` bigint(20) NOT NULL,
+  `book_id` bigint(20) NOT NULL,
+  `borrowed_date` datetime(6) DEFAULT NULL,
+  `due_date` date DEFAULT NULL,
+  `returned_date` datetime(6) DEFAULT NULL,
+  `status` enum('BORROWED','RETURNED','OVERDUE') DEFAULT 'BORROWED',
+  `notes` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -424,7 +448,8 @@ CREATE TABLE `notification` (
   `created_at` datetime(6) DEFAULT NULL,
   `is_read` bit(1) NOT NULL,
   `message` varchar(255) DEFAULT NULL,
-  `student_id` bigint(20) DEFAULT NULL
+  `student_id` bigint(20) DEFAULT NULL,
+  `admin_id` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -510,6 +535,19 @@ ALTER TABLE `book_reservers`
   ADD KEY `fk_student_id` (`student_id`);
 
 --
+-- Indexes for table `borrow_record`
+--
+ALTER TABLE `borrow_record`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_borrow_record_student` (`student_id`),
+  ADD KEY `fk_borrow_record_book` (`book_id`),
+  ADD KEY `idx_borrow_record_status` (`status`),
+  ADD KEY `idx_borrow_record_due_date` (`due_date`),
+  ADD KEY `idx_borrow_record_student_status` (`student_id`,`status`),
+  ADD KEY `idx_borrow_record_book_status` (`book_id`,`status`),
+  ADD KEY `idx_borrow_record_borrowed_date` (`borrowed_date`);
+
+--
 -- Indexes for table `courses`
 --
 ALTER TABLE `courses`
@@ -527,7 +565,8 @@ ALTER TABLE `notification`
 --
 ALTER TABLE `reservation`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `FKiuft3416ayrn5538t6bd108fw` (`student_id`);
+  ADD KEY `FKiuft3416ayrn5538t6bd108fw` (`student_id`),
+  ADD KEY `FKirxtcw4s6lhwi6l9ocrk6bjfy` (`book_id`);
 
 --
 -- Indexes for table `student`
@@ -561,7 +600,13 @@ ALTER TABLE `student_reserved_books`
 -- AUTO_INCREMENT for table `book`
 --
 ALTER TABLE `book`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `borrow_record`
+--
+ALTER TABLE `borrow_record`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `courses`
@@ -573,13 +618,13 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `reservation`
 --
 ALTER TABLE `reservation`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `student`
@@ -599,6 +644,13 @@ ALTER TABLE `book_reservers`
   ADD CONSTRAINT `fk_student_id` FOREIGN KEY (`student_id`) REFERENCES `student` (`id`);
 
 --
+-- Constraints for table `borrow_record`
+--
+ALTER TABLE `borrow_record`
+  ADD CONSTRAINT `fk_borrow_record_book` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_borrow_record_student` FOREIGN KEY (`student_id`) REFERENCES `student` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `notification`
 --
 ALTER TABLE `notification`
@@ -608,6 +660,7 @@ ALTER TABLE `notification`
 -- Constraints for table `reservation`
 --
 ALTER TABLE `reservation`
+  ADD CONSTRAINT `FKirxtcw4s6lhwi6l9ocrk6bjfy` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`),
   ADD CONSTRAINT `FKiuft3416ayrn5538t6bd108fw` FOREIGN KEY (`student_id`) REFERENCES `student` (`id`);
 
 --
