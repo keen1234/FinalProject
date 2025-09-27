@@ -858,6 +858,25 @@ button[type="button"]:hover {
     background-color: #d32f2f; /* Darker red on hover */
 }
 
+.reservation-action-btn {
+    min-width: 100px;
+    max-width: 140px;
+    padding: 0.5rem 1.2rem;
+    margin: 0 0.5rem 0.5rem 0;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-block;
+}
+.reservation-action-btn:hover {
+    background: #1d4ed8;
+}
+
 /* Utility Classes */
 .hidden {
     display: none;

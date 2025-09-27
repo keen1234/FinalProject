@@ -52,10 +52,10 @@
                     <span th:text="${reservation.student != null ? reservation.student.firstName + ' ' + reservation.student.lastName : 'Unknown'}"></span>
                     requested <strong th:text="${reservation.book.title}"></strong>
                     <form th:action="@{'/admin/reservation/accept/' + ${reservation.id}}" method="post" style="display:inline;">
-                        <button type="submit">Accept</button>
+                        <button type="submit" class="reservation-action-btn">Accept</button>
                     </form>
                     <form th:action="@{'/admin/reservation/reject/' + ${reservation.id}}" method="post" style="display:inline;">
-                        <button type="submit">Reject</button>
+                        <button type="submit" class="reservation-action-btn">Reject</button>
                     </form>
                 </li>
             </ul>
