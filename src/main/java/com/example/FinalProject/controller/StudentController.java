@@ -2,8 +2,10 @@ package com.example.FinalProject.controller;
 
 import com.example.FinalProject.model.Student;
 import com.example.FinalProject.model.Course;
+import com.example.FinalProject.model.Notification;
 import com.example.FinalProject.repository.CourseRepository;
 import com.example.FinalProject.repository.StudentRepository;
+import com.example.FinalProject.repository.NotificationRepository;
 import com.example.FinalProject.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,8 +20,13 @@ import org.springframework.ui.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.List;
+import java.util.ArrayList;
 
 
 @Controller
@@ -37,6 +44,9 @@ public class StudentController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -116,6 +126,102 @@ public class StudentController {
             }
         }
         return "home";
+    }
+    
+    @GetMapping("/student/notifications")
+    public String viewNotifications(Authentication authentication, Model model) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+            Student student = userDetails.getStudent();
+            model.addAttribute("student", student);
+            
+            // Get all notifications for this student, ordered by creation date (newest first)
+            List<Notification> notifications = notificationRepository.findByStudentOrderByCreatedAtDesc(student);
+            model.addAttribute("notifications", notifications);
+            
+            // Mark all notifications as read when viewed
+            for (Notification notification : notifications) {
+                if (!notification.isRead()) {
+                    notification.setRead(true);
+                    notificationRepository.save(notification);
+                }
+            }
+        }
+        
+        return "student-notifications";
+    }
+    
+    @GetMapping("/api/student/notifications/count")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getNotificationCount(Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            response.put("count", 0);
+            response.put("notifications", new ArrayList<>());
+            return ResponseEntity.ok(response);
+        }
+        
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+            Student student = userDetails.getStudent();
+            
+            // Get unread notifications
+            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(student);
+            List<Map<String, Object>> notificationList = new ArrayList<>();
+            
+            for (Notification notification : unreadNotifications) {
+                Map<String, Object> notifMap = new HashMap<>();
+                notifMap.put("id", notification.getId());
+                notifMap.put("message", notification.getMessage());
+                notifMap.put("createdAt", notification.getCreatedAt().toString());
+                notificationList.add(notifMap);
+            }
+            
+            response.put("count", unreadNotifications.size());
+            response.put("notifications", notificationList);
+        } else {
+            response.put("count", 0);
+            response.put("notifications", new ArrayList<>());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/api/student/notifications/mark-read")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> markNotificationsAsRead(Authentication authentication) {
+        Map<String, String> response = new HashMap<>();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            response.put("status", "error");
+            response.put("message", "Not authenticated");
+            return ResponseEntity.status(401).body(response);
+        }
+        
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+            Student student = userDetails.getStudent();
+            
+            // Mark all unread notifications as read
+            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(student);
+            for (Notification notification : unreadNotifications) {
+                notification.setRead(true);
+                notificationRepository.save(notification);
+            }
+            
+            response.put("status", "success");
+            response.put("message", "Notifications marked as read");
+        } else {
+            response.put("status", "error");
+            response.put("message", "Student not found");
+        }
+        
+        return ResponseEntity.ok(response);
     }
 
 }

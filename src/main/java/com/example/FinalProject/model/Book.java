@@ -36,7 +36,7 @@ public class Book {
 
     public enum Status {
         available,
-        not_available,
+        reserved,
         borrowed
     }
 

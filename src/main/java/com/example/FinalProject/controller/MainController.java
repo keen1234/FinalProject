@@ -14,27 +14,45 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.FinalProject.service.AdminDetails;
 import com.example.FinalProject.service.AdminService;
+import com.example.FinalProject.model.Notification;
+import com.example.FinalProject.repository.NotificationRepository;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Controller
 public class MainController {
     @Autowired
     private AdminService adminService;
+    
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @GetMapping("/home")
     public String home(Authentication authentication, Model model) {
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.example.FinalProject.model.StudentDetails) {
             com.example.FinalProject.model.StudentDetails userDetails = (com.example.FinalProject.model.StudentDetails) authentication.getPrincipal();
             model.addAttribute("student", userDetails.getStudent());
+            
+            // Add unread notification count for initial display
+            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(userDetails.getStudent());
+            model.addAttribute("unreadNotificationCount", unreadNotifications.size());
         }
         return "home";
     }
     @GetMapping("/about")
-    public String about() {
+    public String about(Authentication authentication, Model model) {
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.example.FinalProject.model.StudentDetails) {
+            com.example.FinalProject.model.StudentDetails userDetails = (com.example.FinalProject.model.StudentDetails) authentication.getPrincipal();
+            model.addAttribute("student", userDetails.getStudent());
+            
+            // Add unread notification count for initial display
+            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(userDetails.getStudent());
+            model.addAttribute("unreadNotificationCount", unreadNotifications.size());
+        }
         return "about";
     }
     @GetMapping("/user-signup")

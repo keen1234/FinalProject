@@ -19,7 +19,9 @@
         <div class="nav-auth">
             <button id="notificationBell" class="notification-bell" title="Notifications" aria-label="Notifications">
                 <i class="fa fa-bell"></i>
-                <span id="notificationCount" class="notification-count">0</span>
+                <span id="notificationCount" class="notification-count" 
+                      th:style="${unreadNotificationCount != null and unreadNotificationCount > 0} ? 'display:inline-block;' : 'display:none;'"
+                      th:text="${unreadNotificationCount ?: 0}">0</span>
             </button>
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
@@ -34,6 +36,7 @@
                     </div>
                     <hr>
                     <a href="/userprofile" class="profile-link">Profile</a>
+                    <a href="/student/notifications" class="profile-link">Notifications</a>
                     <div style="height: 30px;"></div>
                     <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
                 </div>
@@ -70,22 +73,70 @@ if (profileBtn && profileDropdown) {
 const notificationBell = document.getElementById('notificationBell');
 const notificationCount = document.getElementById('notificationCount');
 let notifications = [];
+
+// Check if user is authenticated (only show notifications for authenticated users)
+const isAuthenticated = document.querySelector('.profile-menu') !== null;
+
+if (isAuthenticated) {
+    // Load notifications on page load
+    loadNotifications();
+    
+    // Refresh notifications every 30 seconds
+    setInterval(loadNotifications, 30000);
+}
+
+function loadNotifications() {
+    if (!isAuthenticated) return;
+    
+    fetch('/api/student/notifications/count')
+        .then(response => response.json())
+        .then(data => {
+            notifications = data.notifications || [];
+            const count = data.count || 0;
+            
+            if (count > 0) {
+                notificationCount.textContent = count;
+                notificationCount.style.display = 'inline-block';
+            } else {
+                notificationCount.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+        });
+}
+
 notificationBell.addEventListener('click', function() {
     if (notifications.length > 0) {
-        alert(notifications.join('\n'));
-        notifications = [];
-        notificationCount.style.display = 'none';
-        notificationCount.textContent = '0';
+        // Show notifications in a more user-friendly way
+        const notificationMessages = notifications.map(n => n.message).join('\n\n');
+        alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
+        
+        // Mark notifications as read
+        fetch('/api/student/notifications/mark-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Clear notification count
+                notifications = [];
+                notificationCount.style.display = 'none';
+                notificationCount.textContent = '0';
+            }
+        })
+        .catch(error => {
+            console.error('Error marking notifications as read:', error);
+        });
     } else {
-        alert('No new notifications');
+        // Suggest checking the notifications page
+        alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
     }
 });
-function addNotification(message) {
-    notifications.push(message);
-    notificationCount.textContent = notifications.length;
-    notificationCount.style.display = 'inline-block';
-}
-// Example usage: addNotification('Your reservation was accepted!');
+
 function showNotification(message, type = 'success') {
     const bar = document.getElementById('notificationBar');
     bar.textContent = message;
@@ -95,6 +146,11 @@ function showNotification(message, type = 'success') {
         bar.classList.remove('show');
         bar.style.display = 'none';
     }, 3500);
+    
+    // Refresh notifications after showing a notification
+    if (isAuthenticated) {
+        setTimeout(loadNotifications, 1000);
+    }
 }
 </script>
 </body>

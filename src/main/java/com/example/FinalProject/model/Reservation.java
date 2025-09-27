@@ -23,7 +23,8 @@ public class Reservation {
     public enum Status {
         pending,
         accepted,
-        rejected
+        rejected,
+        completed
     }
 
     public Reservation() {

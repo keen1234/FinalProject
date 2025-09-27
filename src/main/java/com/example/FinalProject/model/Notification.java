@@ -10,10 +10,19 @@ public class Notification {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "student_id")
     private Student student;
 
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private admin admin;
+
     private String message;
+    
+    @Column(name = "is_read")
     private boolean isRead = false;
+    
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // Getters and setters
@@ -21,6 +30,8 @@ public class Notification {
     public void setId(Long id) { this.id = id; }
     public Student getStudent() { return student; }
     public void setStudent(Student student) { this.student = student; }
+    public admin getAdmin() { return admin; }
+    public void setAdmin(admin admin) { this.admin = admin; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
     public boolean isRead() { return isRead; }

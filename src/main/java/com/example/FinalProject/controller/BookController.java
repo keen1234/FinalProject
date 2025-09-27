@@ -4,10 +4,14 @@ import com.example.FinalProject.model.Book;
 import com.example.FinalProject.model.Reservation;
 import com.example.FinalProject.model.Student;
 import com.example.FinalProject.model.Notification;
+import com.example.FinalProject.model.BorrowRecord;
+import com.example.FinalProject.model.admin;
 import com.example.FinalProject.repository.BookRepository;
 import com.example.FinalProject.repository.ReservationRepository;
 import com.example.FinalProject.repository.StudentRepository;
 import com.example.FinalProject.repository.NotificationRepository;
+import com.example.FinalProject.repository.BorrowRecordRepository;
+import com.example.FinalProject.repository.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +44,12 @@ public class BookController {
 
     @Autowired
     private NotificationRepository notificationRepository;
+    
+    @Autowired
+    private BorrowRecordRepository borrowRecordRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
 
     @GetMapping("/book")
     public String listBooks(
@@ -79,7 +90,9 @@ public class BookController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/book")
-    public String showBooks(Model model, Authentication authentication) {
+    public String showBooks(
+            @RequestParam(value = "studentSearch", required = false) String studentSearch,
+            Model model, Authentication authentication) {
         List<Book> books = bookRepository.findAll();
         System.out.println("Books fetched: " + books.size());
         for (Book b : books) {
@@ -87,10 +100,56 @@ public class BookController {
         }
         model.addAttribute("books", books);
         model.addAttribute("editBook", null);
+        
+        // Get pending reservations
         List<Reservation> pendingReservations = reservationRepository.findByStatus(Reservation.Status.pending);
         model.addAttribute("pendingReservations", pendingReservations);
+        
+        // Get accepted reservations (ready to be borrowed) - only those where book is still reserved
+        List<Reservation> allAcceptedReservations = reservationRepository.findByStatus(Reservation.Status.accepted);
+        List<Reservation> acceptedReservations = allAcceptedReservations.stream()
+            .filter(reservation -> reservation.getBook() != null && reservation.getBook().getStatus() == Book.Status.reserved)
+            .collect(Collectors.toList());
+        model.addAttribute("acceptedReservations", acceptedReservations);
+        
         List<Notification> notifications = notificationRepository.findAll();
         model.addAttribute("notifications", notifications);
+        
+        // Add borrowed books information
+        List<BorrowRecord> borrowedBooks = borrowRecordRepository.findByStatusOrderByDueDateAsc(BorrowRecord.Status.BORROWED);
+        model.addAttribute("borrowedBooks", borrowedBooks);
+        
+        // Add overdue books
+        List<BorrowRecord> overdueBooks = borrowRecordRepository.findOverdueBooks(BorrowRecord.Status.BORROWED, LocalDate.now());
+        model.addAttribute("overdueBooks", overdueBooks);
+        
+        // Add books due soon (within 3 days)
+        List<BorrowRecord> dueSoonBooks = borrowRecordRepository.findBooksDueSoon(BorrowRecord.Status.BORROWED, LocalDate.now(), LocalDate.now().plusDays(3));
+        model.addAttribute("dueSoonBooks", dueSoonBooks);
+        
+        // Add student search functionality
+        if (studentSearch != null && !studentSearch.trim().isEmpty()) {
+            List<Student> students = studentRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(studentSearch.trim(), studentSearch.trim());
+            
+            // For each student, get their book information
+            for (Student student : students) {
+                // Get borrowed books
+                List<BorrowRecord> borrowedRecords = borrowRecordRepository.findByStudentAndStatus(student, BorrowRecord.Status.BORROWED);
+                student.setBorrowedBooks(borrowedRecords.stream()
+                    .map(BorrowRecord::getBook)
+                    .collect(Collectors.toList()));
+                
+                // Get reserved books (accepted reservations)
+                List<Reservation> acceptedReservationsList = reservationRepository.findByStudentAndStatus(student, Reservation.Status.accepted);
+                student.setReservedBooks(acceptedReservationsList.stream()
+                    .map(Reservation::getBook)
+                    .collect(Collectors.toList()));
+            }
+            
+            model.addAttribute("searchResults", students);
+            model.addAttribute("studentSearch", studentSearch);
+        }
+        
         if (authentication != null && authentication.isAuthenticated()) {
             Object principal = authentication.getPrincipal();
             Map<String, Object> admin = new HashMap<>();
@@ -230,7 +289,7 @@ public class BookController {
         reservation.setBook(book);
         reservation.setStatus(Reservation.Status.pending);
         reservationRepository.save(reservation);
-        book.setStatus(Book.Status.not_available);
+        book.setStatus(Book.Status.reserved);
         // Add to reserved lists
         final Student finalStudent = student;
         if (student.getReservedBooks().stream().noneMatch(b -> b.getId().equals(book.getId()))) {
@@ -241,6 +300,14 @@ public class BookController {
         }
         studentRepository.save(student);
         bookRepository.save(book);
+        // Send notification to all admins
+        List<admin> admins = adminRepository.findAll();
+        for (admin adm : admins) {
+            Notification adminNotif = new Notification();
+            adminNotif.setAdmin(adm);
+            adminNotif.setMessage("New reservation request: '" + book.getTitle() + "' by " + student.getFirstName() + " " + student.getLastName());
+            notificationRepository.save(adminNotif);
+        }
         response.put("message", "Reservation request sent to admin!");
         return ResponseEntity.ok(response);
     }
@@ -248,33 +315,35 @@ public class BookController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/reservation/accept/{id}")
     public String acceptReservation(@PathVariable Long id) {
-        Reservation reservation = reservationRepository.findById(id).orElse(null);
-        if (reservation != null && reservation.getStatus() == Reservation.Status.pending) {
-            reservation.setStatus(Reservation.Status.accepted);
-            reservationRepository.save(reservation);
-            Book book = reservation.getBook();
-            book.setStatus(Book.Status.borrowed);
-            Student student = reservation.getStudent();
-            // Move from reserved to borrowed
-            if (student != null && book != null) {
-                final Student finalStudent2 = student;
-                student.getReservedBooks().removeIf(b -> b.getId().equals(book.getId()));
-                if (student.getBorrowedBooks().stream().noneMatch(b -> b.getId().equals(book.getId()))) {
-                    student.getBorrowedBooks().add(book);
+        try {
+            Reservation reservation = reservationRepository.findById(id).orElse(null);
+            if (reservation != null && reservation.getStatus() == Reservation.Status.pending) {
+                reservation.setStatus(Reservation.Status.accepted);
+                reservationRepository.save(reservation);
+                
+                Book book = reservation.getBook();
+                Student student = reservation.getStudent();
+                
+                if (student != null && book != null) {
+                    // Keep book status as reserved
+                    book.setStatus(Book.Status.reserved);
+                    bookRepository.save(book);
+                    
+                    // Keep reservation relationships intact
+                    // The book remains in student's reserved books
+                    // The student remains in book's reservers
+                    
+                    // Send acceptance notification to student
+                    Notification notification = new Notification();
+                    notification.setStudent(student);
+                    notification.setMessage("Great news! Your reservation for '" + book.getTitle() + "' has been accepted. Please come to the library to pick up the book and complete the borrowing process.");
+                    notificationRepository.save(notification);
+                    
+                    System.out.println("Reservation accepted for book '" + book.getTitle() + "' by student '" + student.getFirstName() + " " + student.getLastName() + "'");
                 }
-                book.getReservers().removeIf(s -> s.getId().equals(finalStudent2.getId()));
-                if (book.getBorrowers().stream().noneMatch(s -> s.getId().equals(finalStudent2.getId()))) {
-                    book.getBorrowers().add(finalStudent2);
-                }
-                studentRepository.save(student);
-                studentRepository.flush(); // Ensure changes are written to DB
-                bookRepository.save(book);
-                System.out.println("Book " + book.getTitle() + " added to student " + student.getFirstName() + "'s borrowedBooks and persisted.");
-                Notification notification = new Notification();
-                notification.setStudent(student);
-                notification.setMessage("Your reservation for '" + book.getTitle() + "' was accepted!");
-                notificationRepository.save(notification);
             }
+        } catch (Exception e) {
+            System.err.println("Error accepting reservation: " + e.getMessage());
         }
         return "redirect:/admin/book";
     }
@@ -286,7 +355,181 @@ public class BookController {
         if (reservation != null && reservation.getStatus() == Reservation.Status.pending) {
             reservation.setStatus(Reservation.Status.rejected);
             reservationRepository.save(reservation);
-            // TODO: Notify student of rejection
+            
+            Book book = reservation.getBook();
+            Student student = reservation.getStudent();
+            
+            // Clean up the reservation relationships
+            if (student != null && book != null) {
+                final Student finalStudent = student;
+                // Remove book from student's reserved books
+                student.getReservedBooks().removeIf(b -> b.getId().equals(book.getId()));
+                // Remove student from book's reservers
+                book.getReservers().removeIf(s -> s.getId().equals(finalStudent.getId()));
+                
+                // Check if there are other pending reservations for this book
+                List<Reservation> otherPendingReservations = reservationRepository.findByBookIdAndStatus(book.getId(), Reservation.Status.pending);
+                if (otherPendingReservations.isEmpty()) {
+                    // No other pending reservations, make book available again
+                    book.setStatus(Book.Status.available);
+                }
+                
+                studentRepository.save(student);
+                bookRepository.save(book);
+                
+                // Send rejection notification to student
+                Notification notification = new Notification();
+                notification.setStudent(student);
+                notification.setMessage("Your reservation for '" + book.getTitle() + "' was rejected. The book is now available for other reservations.");
+                notificationRepository.save(notification);
+                
+                System.out.println("Reservation for book '" + book.getTitle() + "' by student '" + student.getFirstName() + " " + student.getLastName() + "' was rejected and notification sent.");
+            }
+        }
+        return "redirect:/admin/book";
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/reservation/borrow/{reservationId}")
+    public String borrowReservedBook(@PathVariable Long reservationId, @RequestParam("dueDate") String dueDateStr) {
+        try {
+            Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+            if (reservation != null && reservation.getStatus() == Reservation.Status.accepted) {
+                LocalDate dueDate = LocalDate.parse(dueDateStr);
+                
+                Book book = reservation.getBook();
+                Student student = reservation.getStudent();
+                
+                if (student != null && book != null) {
+                    // Create borrow record
+                    BorrowRecord borrowRecord = new BorrowRecord(student, book, dueDate);
+                    borrowRecordRepository.save(borrowRecord);
+                    
+                    // Update book status to borrowed
+                    book.setStatus(Book.Status.borrowed);
+                    bookRepository.save(book);
+                    
+                    // Clean up reservation relationships
+                    final Student finalStudent = student;
+                    student.getReservedBooks().removeIf(b -> b.getId().equals(book.getId()));
+                    book.getReservers().removeIf(s -> s.getId().equals(finalStudent.getId()));
+                    
+                    // Add to borrowed books relationships
+                    if (student.getBorrowedBooks().stream().noneMatch(b -> b.getId().equals(book.getId()))) {
+                        student.getBorrowedBooks().add(book);
+                    }
+                    if (book.getBorrowers().stream().noneMatch(s -> s.getId().equals(finalStudent.getId()))) {
+                        book.getBorrowers().add(finalStudent);
+                    }
+                    
+                    studentRepository.save(student);
+                    
+                    // Update reservation status to completed
+                    reservation.setStatus(Reservation.Status.completed);
+                    reservationRepository.save(reservation);
+                    
+                    // Send borrowing notification to student
+                    Notification notification = new Notification();
+                    notification.setStudent(student);
+                    notification.setMessage("You have successfully borrowed '" + book.getTitle() + "'. Due date: " + dueDate.toString());
+                    notificationRepository.save(notification);
+                    
+                    System.out.println("Book '" + book.getTitle() + "' borrowed by student '" + student.getFirstName() + " " + student.getLastName() + "' with due date: " + dueDate);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error borrowing reserved book: " + e.getMessage());
+        }
+        return "redirect:/admin/book";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/book/return/{borrowRecordId}")
+    public String returnBook(@PathVariable Long borrowRecordId) {
+        try {
+            BorrowRecord borrowRecord = borrowRecordRepository.findById(borrowRecordId).orElse(null);
+            if (borrowRecord != null && borrowRecord.getStatus() == BorrowRecord.Status.BORROWED) {
+                borrowRecord.setStatus(BorrowRecord.Status.RETURNED);
+                borrowRecord.setReturnedDate(LocalDateTime.now());
+                borrowRecordRepository.save(borrowRecord);
+                
+                Book book = borrowRecord.getBook();
+                Student student = borrowRecord.getStudent();
+                
+                // Update book status to reserved (student keeps the reservation)
+                book.setStatus(Book.Status.reserved);
+                bookRepository.save(book);
+                
+                // Remove from borrowed relationships
+                student.getBorrowedBooks().removeIf(b -> b.getId().equals(book.getId()));
+                book.getBorrowers().removeIf(s -> s.getId().equals(student.getId()));
+                
+                // Add back to reserved relationships (student keeps the reservation)
+                if (student.getReservedBooks().stream().noneMatch(b -> b.getId().equals(book.getId()))) {
+                    student.getReservedBooks().add(book);
+                }
+                if (book.getReservers().stream().noneMatch(s -> s.getId().equals(student.getId()))) {
+                    book.getReservers().add(student);
+                }
+                
+                studentRepository.save(student);
+                
+                // Ensure there's an active reservation for this book and student
+                List<Reservation> existingReservations = reservationRepository.findByStudentAndBookAndStatus(student, book, Reservation.Status.accepted);
+                if (existingReservations.isEmpty()) {
+                    // Create a new accepted reservation since the book is still reserved for this student
+                    Reservation newReservation = new Reservation();
+                    newReservation.setStudent(student);
+                    newReservation.setBook(book);
+                    newReservation.setStatus(Reservation.Status.accepted);
+                    reservationRepository.save(newReservation);
+                }
+                
+                // Send return notification to student
+                Notification notification = new Notification();
+                notification.setStudent(student);
+                
+                String message;
+                if (borrowRecord.isOverdue()) {
+                    long overdueDays = Math.abs(borrowRecord.getDaysUntilDue());
+                    message = "Your book '" + book.getTitle() + "' has been returned. It was " + overdueDays + " day(s) overdue. The book is still reserved for you and you can borrow it again anytime.";
+                } else {
+                    message = "Your book '" + book.getTitle() + "' has been returned successfully. The book is still reserved for you and you can borrow it again anytime.";
+                }
+                
+                notification.setMessage(message);
+                notificationRepository.save(notification);
+                
+                System.out.println("Book '" + book.getTitle() + "' returned by student '" + student.getFirstName() + " " + student.getLastName() + "'");
+            }
+        } catch (Exception e) {
+            System.err.println("Error returning book: " + e.getMessage());
+        }
+        return "redirect:/admin/book";
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/book/extend-due-date/{borrowRecordId}")
+    public String extendDueDate(@PathVariable Long borrowRecordId, @RequestParam("newDueDate") String newDueDateStr) {
+        try {
+            BorrowRecord borrowRecord = borrowRecordRepository.findById(borrowRecordId).orElse(null);
+            if (borrowRecord != null && borrowRecord.getStatus() == BorrowRecord.Status.BORROWED) {
+                LocalDate newDueDate = LocalDate.parse(newDueDateStr);
+                LocalDate oldDueDate = borrowRecord.getDueDate();
+                
+                borrowRecord.setDueDate(newDueDate);
+                borrowRecordRepository.save(borrowRecord);
+                
+                // Send notification to student
+                Notification notification = new Notification();
+                notification.setStudent(borrowRecord.getStudent());
+                notification.setMessage("The due date for your book '" + borrowRecord.getBook().getTitle() + "' has been updated from " + oldDueDate + " to " + newDueDate + ".");
+                notificationRepository.save(notification);
+                
+                System.out.println("Due date extended for book '" + borrowRecord.getBook().getTitle() + "' to " + newDueDate);
+            }
+        } catch (Exception e) {
+            System.err.println("Error extending due date: " + e.getMessage());
         }
         return "redirect:/admin/book";
     }
