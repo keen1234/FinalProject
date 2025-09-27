@@ -1,9 +1,0 @@
-﻿# FinalProject
-
-this is website for our final exam project
-
-this is still working in progress
-
-title : Librows
-Library managements system that you can reserve for the book you want to barrow
-note: you still need to get that book when you reserve 
