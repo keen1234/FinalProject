@@ -1,31 +1,39 @@
-package com.example.FinalProject;
+package com.example.FinalProject.service;
 
-import com.example.FinalProject.model.Student;
+import com.example.FinalProject.model.admin;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-public class StudentDetails implements UserDetails {
-    private final Student student;
+public class AdminDetails implements UserDetails {
 
-    public StudentDetails(Student student) {
-        this.student = student;
+    private final admin admin;
+
+    public AdminDetails(admin admin) {
+        this.admin = admin;
+    }
+
+    public admin getAdmin() {
+        return admin;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // No roles for now
+        return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
     @Override
     public String getPassword() {
-        return student.getPassword();
+        return admin.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return student.getEmail();
+        // Use the admin's name as the username
+        return admin.getName();
     }
 
     @Override
@@ -46,9 +54,5 @@ public class StudentDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public Student getStudent() {
-        return student;
     }
 }

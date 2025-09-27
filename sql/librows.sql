@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 20, 2025 at 08:57 AM
+-- Generation Time: Sep 27, 2025 at 09:23 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -28,11 +28,19 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `admin` (
-  `id` int(11) NOT NULL,
-  `user` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `status` enum('online','offline') NOT NULL DEFAULT 'offline'
+  `id` bigint(20) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin`
+--
+
+INSERT INTO `admin` (`id`, `email`, `password`, `status`, `name`) VALUES
+(1, 'adminkenth@gmail.com', 'admin12345', 'online', 'kenth');
 
 -- --------------------------------------------------------
 
@@ -41,14 +49,16 @@ CREATE TABLE `admin` (
 --
 
 CREATE TABLE `book` (
-  `id` int(11) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `author` varchar(100) NOT NULL,
+  `id` bigint(20) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `author` varchar(255) DEFAULT NULL,
   `date_publish` date DEFAULT NULL,
-  `genre` varchar(50) DEFAULT NULL,
-  `language` varchar(50) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `status` enum('available','not available','borrowed') NOT NULL DEFAULT 'available'
+  `genre` varchar(255) DEFAULT NULL,
+  `language` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
+  `country` varchar(255) DEFAULT NULL,
+  `time` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -108,16 +118,18 @@ CREATE TABLE `student` (
   `number` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `course_id` bigint(20) NOT NULL
+  `course_id` bigint(20) NOT NULL,
+  `reserve` int(11) DEFAULT NULL,
+  `borrowedBooks` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `student`
 --
 
-INSERT INTO `student` (`id`, `first_name`, `last_name`, `Course`, `address`, `number`, `email`, `password`, `course_id`) VALUES
-(4, 'Alejo', 'Cabanero', NULL, 'Avida Sta Catalina Village', '09682185956', 'Kenthcabanero252@gmail.com', '$2a$10$Afdha5Fg82cSMl0XUmosnepTguqNIelfgZcWQCBxm6cmhMgNgqrSG', 1),
-(5, 'Joshua', 'Mendoza', NULL, 'test', 'test', 'test@gamil.com', '$2a$10$Ukfsb24/RGKgePXTFsoURe4shFILkYdBP5NLhNlqtSkggPS6H0fDq', 1);
+INSERT INTO `student` (`id`, `first_name`, `last_name`, `Course`, `address`, `number`, `email`, `password`, `course_id`, `reserve`, `borrowedBooks`) VALUES
+(4, 'Alejo', 'Cabanero', NULL, 'Avida Sta Catalina Village', '09682185956', 'Kenthcabanero252@gmail.com', '$2a$10$Afdha5Fg82cSMl0XUmosnepTguqNIelfgZcWQCBxm6cmhMgNgqrSG', 1, NULL, NULL),
+(8, 'test', 'test', NULL, 'test', 'test', 'test@gamil.com', '$2a$10$28lbkgHLg9aslZg3hQjxt.kJ/7bnOKCEoC7XDWibGVH2ppqcFJOKC', 1, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -128,7 +140,7 @@ INSERT INTO `student` (`id`, `first_name`, `last_name`, `Course`, `address`, `nu
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user` (`user`);
+  ADD UNIQUE KEY `user` (`email`);
 
 --
 -- Indexes for table `book`
@@ -158,13 +170,13 @@ ALTER TABLE `student`
 -- AUTO_INCREMENT for table `admin`
 --
 ALTER TABLE `admin`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `book`
 --
 ALTER TABLE `book`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `courses`
@@ -176,7 +188,7 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT for table `student`
 --
 ALTER TABLE `student`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables

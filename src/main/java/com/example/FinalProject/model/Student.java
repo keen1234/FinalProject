@@ -1,6 +1,9 @@
 package com.example.FinalProject.model;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "student")
 public class Student {
@@ -26,6 +29,22 @@ public class Student {
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+        name = "student_borrowed_books",
+        joinColumns = @JoinColumn(name = "student_id"),
+        inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> borrowedBooks = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "student_reserved_books",
+        joinColumns = @JoinColumn(name = "student_id"),
+        inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> reservedBooks = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -84,4 +103,14 @@ public class Student {
 
     public Course getCourse() { return course; }
     public void setCourse(Course course) { this.course = course; }
+
+    public List<Book> getBorrowedBooks() { return borrowedBooks; }
+    public void setBorrowedBooks(List<Book> borrowedBooks) { this.borrowedBooks = borrowedBooks; }
+
+    public List<Book> getReservedBooks() {
+        return reservedBooks;
+    }
+    public void setReservedBooks(List<Book> reservedBooks) {
+        this.reservedBooks = reservedBooks;
+    }
 }

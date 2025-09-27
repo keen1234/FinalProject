@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Management</title>
+    <link rel="stylesheet" href="/css/book.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar" aria-label="Main Navigation">
+    <div class="navbar-content">
+        <div class="nav-center">
+            <ul class="nav-links">
+                <li><a href="/admin-home" class="nav-link">Home</a></li>
+                <li><a href="/admin-book" class="nav-link active">Book</a></li>
+            </ul>
+        </div>
+        <div class="nav-auth">
+            <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
+            <div class="profile-menu" sec:authorize="isAuthenticated()">
+                <button class="profile-btn">
+                    <span class="profile-logo" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</span>
+                </button>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <div class="profile-info" style="display: flex; flex-direction: column; align-items: center; padding: 1.5rem 0 0.5rem 0;">
+                        <div class="profile-logo-large" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}" style="background: #3b82f6; color: #fff; font-size: 2.5rem; font-weight: bold; border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"></div>
+                        <div th:if="${admin != null}" style="width: 100%; text-align: center;">
+                            <strong th:text="${admin.name}" style="font-size:1.2em; display: block; margin-bottom: 0.3rem;"></strong>
+                            <span th:text="${admin.email}" style="color:#888;font-size:1em; display: block; margin-bottom: 0.3rem;"></span>
+                            <span th:text="${admin.status}" style="color:#007b00;font-size:1em; display: block; margin-bottom: 0.7rem;"></span>
+                        </div>
+                        <hr style="width: 90%; margin: 0.7rem auto 0.7rem auto; border: none; border-top: 1px solid #ddd;">
+                        <a href="/logout" class="profile-link logout" style="display: block; background: #ffeaea; color: #e53935; font-weight: bold; border-radius: 8px; padding: 0.8rem 0; text-align: center; margin: 0.5rem 0 0 0; font-size: 1.1em;">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+<div style="height: 1.5rem;"></div>
+<main class="main-content" sec:authorize="hasRole('ADMIN')">
+    <div class="container">
+        <div id="notificationBar" class="notification-bar" style="display:none;"></div>
+        <div id="persistentNotificationBar" class="notification-bar" style="display:none; position:static; margin-bottom:1rem;"></div>
+
+        <!-- Pending Reservations Notification -->
+        <div th:if="${pendingReservations != null and #lists.size(pendingReservations) > 0}" class="pending-reservations">
+            <h2>Pending Reservations</h2>
+            <ul>
+                <li th:each="reservation : ${pendingReservations}">
+                    <span th:text="${reservation.student != null ? reservation.student.firstName + ' ' + reservation.student.lastName : 'Unknown'}"></span>
+                    requested <strong th:text="${reservation.book.title}"></strong>
+                    <form th:action="@{'/admin/reservation/accept/' + ${reservation.id}}" method="post" style="display:inline;">
+                        <button type="submit">Accept</button>
+                    </form>
+                    <form th:action="@{'/admin/reservation/reject/' + ${reservation.id}}" method="post" style="display:inline;">
+                        <button type="submit">Reject</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+        <h1>Book Management</h1>
+
+        <!-- Add New Book Form -->
+        <div class="form-section">
+            <h2>Add New Book</h2>
+            <form th:action="@{/admin/book/add}" method="post">
+                <input type="text" name="title" placeholder="Title" required />
+                <input type="text" name="author" placeholder="Author" required />
+                <input type="text" name="genre" placeholder="Genre" required />
+                <input type="date" name="datePublish" placeholder="Published Date" required />
+                <input type="text" name="language" placeholder="Language" required />
+                <textarea name="description" placeholder="Description"></textarea>
+                <button type="submit">Add Book</button>
+            </form>
+        </div>
+
+        <!-- Edit Book Form -->
+        <div class="form-section" th:if="${editBook != null}">
+            <h2>Edit Book</h2>
+            <form th:action="@{'/admin/book/edit/' + ${editBook.id}}" method="post">
+                <input type="hidden" name="id" th:value="${editBook.id}" />
+                <input type="text" name="title" th:value="${editBook.title}" placeholder="Title" required />
+                <input type="text" name="author" th:value="${editBook.author}" placeholder="Author" required />
+                <input type="text" name="genre" th:value="${editBook.genre}" placeholder="Genre" required />
+                <input type="date" name="datePublish" th:value="${#dates.format(editBook.datePublish, 'yyyy-MM-dd')}" placeholder="Published Date" required />
+                <input type="text" name="language" th:value="${editBook.language}" placeholder="Language" required />
+                <input type="text" name="country" th:value="${editBook.country}" placeholder="Country" required />
+                <input type="text" name="time" th:value="${editBook.time}" placeholder="Time" required />
+                <textarea name="description" th:text="${editBook.description}" placeholder="Description"></textarea>
+                <input type="hidden" name="status" th:value="${editBook.status}" />
+                <button type="submit">Save Changes</button>
+                <a href="/admin/book">Cancel</a>
+            </form>
+        </div>
+
+        <!-- Book List Table -->
+        <div class="table-container">
+            <h2>All Books</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Genre</th>
+                        <th>Published Date</th>
+                        <th>Language</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="book : ${books}">
+                        <td th:text="${book.title}"></td>
+                        <td th:text="${book.author}"></td>
+                        <td th:text="${book.genre}"></td>
+                        <td th:text="${book.datePublish}"></td>
+                        <td th:text="${book.language}"></td>
+                        <td th:text="${book.status}"></td>
+                        <td>
+                            <a th:href="@{'/admin/book/edit/' + ${book.id}}">Edit</a> |
+                            <a th:href="@{'/admin/book/delete/' + ${book.id}}" onclick="return confirm('Are you sure?')">Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="table-container" th:if="${notifications != null and #lists.size(notifications) > 0}">
+            <h2>Notifications</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Message</th>
+                        <th>Student</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="notification : ${notifications}">
+                        <td th:text="${notification.message}"></td>
+                        <td th:text="${notification.student != null ? notification.student.firstName + ' ' + notification.student.lastName : 'Unknown'}"></td>
+                        <td th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Borrowed Books Table -->
+        <div class="table-container">
+            <h2>Borrowed Books</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Author</th>
+                        <th>Borrowed By</th>
+                        <th>Borrower Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="book : ${books}" th:if="${book.status == 'borrowed' and book.borrowers != null and #lists.size(book.borrowers) > 0}">
+                        <td th:text="${book.title}"></td>
+                        <td th:text="${book.author}"></td>
+                        <td>
+                            <span th:each="borrower : ${book.borrowers}" th:text="${borrower.firstName + ' ' + borrower.lastName}"></span><br/>
+                        </td>
+                        <td>
+                            <span th:each="borrower : ${book.borrowers}" th:text="${borrower.email}"></span><br/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Reserved Books Table -->
+        <div class="table-container">
+            <h2>Reserved Books</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Author</th>
+                        <th>Reserved By</th>
+                        <th>Reserver Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="book : ${books}" th:if="${book.status != 'borrowed' and book.reservers != null and #lists.size(book.reservers) > 0}">
+                        <td th:text="${book.title}"></td>
+                        <td th:text="${book.author}"></td>
+                        <td>
+                            <span th:each="reserver : ${book.reservers}" th:text="${reserver.firstName + ' ' + reserver.lastName}"></span><br/>
+                        </td>
+                        <td>
+                            <span th:each="reserver : ${book.reservers}" th:text="${reserver.email}"></span><br/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<div sec:authorize="!hasRole('ADMIN')">
+    <p>You are not authorized to view this page.</p>
+</div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileBtn = document.querySelector('.profile-btn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        let dropdownOpen = false;
+        if (profileBtn && profileDropdown) {
+            profileBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownOpen = !dropdownOpen;
+                if (dropdownOpen) {
+                    profileDropdown.classList.add('show');
+                } else {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+            document.addEventListener('click', function(e) {
+                if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                    profileDropdown.classList.remove('show');
+                    dropdownOpen = false;
+                }
+            });
+        }
+
+        // Notification logic
+        window.showNotification = function(message, type = 'success') {
+            const bar = document.getElementById('notificationBar');
+            if (!bar) return;
+            bar.textContent = message;
+            bar.className = 'notification-bar ' + type;
+            bar.style.display = 'block';
+            setTimeout(() => { bar.style.display = 'none'; }, 3500);
+        };
+        window.showPersistentNotification = function(message, type = 'success') {
+            const bar = document.getElementById('persistentNotificationBar');
+            if (!bar) return;
+            bar.textContent = message;
+            bar.className = 'notification-bar ' + type;
+            bar.style.display = 'block';
+            if (!document.getElementById('closeNotificationBtn')) {
+                const closeBtn = document.createElement('button');
+                closeBtn.id = 'closeNotificationBtn';
+                closeBtn.textContent = '×';
+                closeBtn.style.float = 'right';
+                closeBtn.style.background = 'none';
+                closeBtn.style.border = 'none';
+                closeBtn.style.fontSize = '1.5rem';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.onclick = function() {
+                    bar.style.display = 'none';
+                };
+                bar.appendChild(closeBtn);
+            }
+        };
+        // Notification bell logic
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationCount = document.getElementById('notificationCount');
+        let notifications = [];
+        if (notificationBell && notificationCount) {
+            notificationBell.addEventListener('click', function() {
+                if (notifications.length > 0) {
+                    alert(notifications.join('\n'));
+                    notifications = [];
+                    notificationCount.style.display = 'none';
+                    notificationCount.textContent = '0';
+                } else {
+                    alert('No new notifications');
+                }
+            });
+        }
+        window.addNotification = function(message) {
+            notifications.push(message);
+            if (notificationCount) {
+                notificationCount.textContent = notifications.length;
+                notificationCount.style.display = 'inline-block';
+            }
+        };
+    });
+</script>
+</html>

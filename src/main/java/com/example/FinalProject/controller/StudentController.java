@@ -1,12 +1,14 @@
-package com.example.FinalProject;
+package com.example.FinalProject.controller;
 
 import com.example.FinalProject.model.Student;
 import com.example.FinalProject.model.Course;
+import com.example.FinalProject.repository.CourseRepository;
+import com.example.FinalProject.repository.StudentRepository;
+import com.example.FinalProject.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,8 @@ import org.springframework.ui.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+
+import java.util.List;
 
 
 @Controller
@@ -41,13 +45,13 @@ public class StudentController {
 
     @PostMapping("/user-signup")
     public String signup(
-        @RequestParam("firstName") String firstName,
-        @RequestParam("lastName") String lastName,
-        @RequestParam("address") String address,
-        @RequestParam("number") String number,
-        @RequestParam("email") String email,
-        @RequestParam("password") String password,
-        @RequestParam("course") String courseCode) {
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("address") String address,
+            @RequestParam("number") String number,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam("course") String courseCode) {
 
         // Check if email already exists
         if (studentRepository.findByEmail(email).isPresent()) {
@@ -78,19 +82,15 @@ public class StudentController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
+        Object adminObj = session.getAttribute("admin");
+        if (adminObj instanceof com.example.FinalProject.model.admin admin) {
+            admin.setStatus("offline");
+            // Save the updated status to the database
+            com.example.FinalProject.service.AdminService adminService = (com.example.FinalProject.service.AdminService) org.springframework.web.context.ContextLoaderListener.getCurrentWebApplicationContext().getBean(com.example.FinalProject.service.AdminService.class);
+            adminService.save(admin);
+        }
         session.invalidate();
         return "redirect:/login";
-    }
-
-    @GetMapping("/home")
-    public String home(Authentication authentication, Model model) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return "redirect:/login";
-        }
-        StudentDetails userDetails = (StudentDetails) authentication.getPrincipal();
-        Student student = userDetails.getStudent();
-        model.addAttribute("student", student);
-        return "home";
     }
 
     @GetMapping("/userprofile")
@@ -98,10 +98,24 @@ public class StudentController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
-        StudentDetails userDetails = (StudentDetails) authentication.getPrincipal();
-        Student student = userDetails.getStudent();
-        model.addAttribute("student", student);
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+            Student student = userDetails.getStudent();
+            model.addAttribute("student", student);
+        }
         return "userprofile";
+    }
+
+    @GetMapping("/")
+    public String home(Authentication authentication, Model model) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+                Student student = userDetails.getStudent();
+                model.addAttribute("student", student);
+            }
+        }
+        return "home";
     }
 
 }

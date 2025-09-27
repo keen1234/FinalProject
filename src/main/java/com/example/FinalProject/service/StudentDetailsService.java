@@ -1,6 +1,8 @@
-package com.example.FinalProject;
+package com.example.FinalProject.service;
 
 import com.example.FinalProject.model.Student;
+import com.example.FinalProject.model.StudentDetails;
+import com.example.FinalProject.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

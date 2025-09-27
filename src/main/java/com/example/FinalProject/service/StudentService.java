@@ -1,6 +1,7 @@
-package com.example.FinalProject;
+package com.example.FinalProject.service;
 
 import com.example.FinalProject.model.Student;
+import com.example.FinalProject.repository.StudentRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 

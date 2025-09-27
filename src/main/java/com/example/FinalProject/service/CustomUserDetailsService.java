@@ -1,14 +1,13 @@
-package com.example.FinalProject;
+package com.example.FinalProject.service;
 
 import com.example.FinalProject.model.Student;
+import com.example.FinalProject.repository.StudentRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final StudentRepository studentRepository;

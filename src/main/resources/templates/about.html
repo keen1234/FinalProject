@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>About</title>
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <nav class="navbar" aria-label="Main Navigation">
@@ -16,16 +17,20 @@
             </ul>
         </div>
         <div class="nav-auth">
+            <button id="notificationBell" class="notification-bell" title="Notifications" aria-label="Notifications">
+                <i class="fa fa-bell"></i>
+                <span id="notificationCount" class="notification-count">0</span>
+            </button>
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn" onclick="document.getElementById('profileDropdown').classList.toggle('show')">
-                    <span class="profile-logo" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</span>
+                <button class="profile-btn">
+                    <span class="profile-logo" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</span>
                 </button>
                 <div id="profileDropdown" class="profile-dropdown">
                     <div class="profile-info">
-                        <div class="profile-logo-large" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</div>
-                        <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong><br>
-                        <span th:text="${#authentication.principal.student.email}">user@email.com</span>
+                        <div class="profile-logo-large" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</div>
+                        <strong th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}" th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong>
+                        <span th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}" th:text="${#authentication.principal.student.email}">user@email.com</span>
                     </div>
                     <hr>
                     <a href="/userprofile" class="profile-link">Profile</a>
@@ -36,15 +41,61 @@
         </div>
     </div>
 </nav>
+<div id="notificationBar" class="notification-bar"></div>
 <script>
-document.addEventListener('click', function(e) {
-    var dropdown = document.getElementById('profileDropdown');
-    var btn = document.querySelector('.profile-btn');
-    if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.remove('show');
+const profileBtn = document.querySelector('.profile-btn');
+const profileDropdown = document.getElementById('profileDropdown');
+
+let dropdownOpen = false;
+
+if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownOpen = !dropdownOpen;
+        if (dropdownOpen) {
+            profileDropdown.classList.add('show');
+        } else {
+            profileDropdown.classList.remove('show');
+        }
+    });
+    document.addEventListener('click', function(e) {
+        if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+            profileDropdown.classList.remove('show');
+            dropdownOpen = false;
+        }
+    });
+}
+
+// Notification bell logic
+const notificationBell = document.getElementById('notificationBell');
+const notificationCount = document.getElementById('notificationCount');
+let notifications = [];
+notificationBell.addEventListener('click', function() {
+    if (notifications.length > 0) {
+        alert(notifications.join('\n'));
+        notifications = [];
+        notificationCount.style.display = 'none';
+        notificationCount.textContent = '0';
+    } else {
+        alert('No new notifications');
     }
 });
+function addNotification(message) {
+    notifications.push(message);
+    notificationCount.textContent = notifications.length;
+    notificationCount.style.display = 'inline-block';
+}
+// Example usage: addNotification('Your reservation was accepted!');
+function showNotification(message, type = 'success') {
+    const bar = document.getElementById('notificationBar');
+    bar.textContent = message;
+    bar.className = 'notification-bar ' + type + ' show';
+    bar.style.display = 'block';
+    setTimeout(() => {
+        bar.classList.remove('show');
+        bar.style.display = 'none';
+    }, 3500);
+}
 </script>
-<!-- ...existing content... -->
 </body>
 </html>
