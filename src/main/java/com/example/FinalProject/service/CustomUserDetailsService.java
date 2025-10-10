@@ -22,10 +22,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (student.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
-        return org.springframework.security.core.userdetails.User
-                .withUsername(student.get().getEmail())
-                .password(student.get().getPassword()) // must already be encoded
-                .roles("USER") // or student.getRole()
-                .build();
+        return new com.example.FinalProject.model.StudentDetails(student.get());
     }
 }

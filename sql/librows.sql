@@ -454,7 +454,7 @@ CREATE TABLE `notification` (
 CREATE TABLE `reservation` (
   `id` bigint(20) NOT NULL,
   `created_at` datetime(6) DEFAULT NULL,
-  `status` enum('accepted','pending','rejected') DEFAULT NULL,
+  `status` enum('accepted','pending','rejected','completed') DEFAULT NULL,
   `book_id` bigint(20) DEFAULT NULL,
   `student_id` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

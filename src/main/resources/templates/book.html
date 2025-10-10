@@ -47,30 +47,25 @@
     </div>
 </nav>
 <div id="notificationBar" class="notification-bar"></div>
-<!-- Separation between navbar and search bar -->
-<div style="height: 1.5rem;"></div>
-<div class="search-bar-wrapper">
-    <div class="search-container" id="search-container">
-        <label for="searchInput" class="visually-hidden">Search Books</label>
-        <input type="text" id="searchInput" placeholder="Search books">
-        <button class="search-btn" id="searchBtn" type="button">
-            <i class="fas fa-search"></i>
-        </button>
-        <span class="search-label">Search</span>
-        <button class="clear-btn" id="clearBtn" type="button">
-            <i class="fas fa-times"></i> Clear
-        </button>
-        <div class="search-loading" id="searchLoading"></div>
-        <div class="search-suggestions" id="searchSuggestions">
-            <!-- Suggestions will be added dynamically -->
+<div class="books-main-center">
+    <div class="search-sort-center">
+        <div class="search-bar-wrapper">
+            <div class="search-container" id="search-container">
+                <label for="searchInput" class="visually-hidden">Search Books</label>
+                <input type="text" id="searchInput" placeholder="Search books">
+                <button class="search-btn" id="searchBtn" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+                <span class="search-label">Search</span>
+                <button class="clear-btn" id="clearBtn" type="button">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+                <div class="search-loading" id="searchLoading"></div>
+                <div class="search-suggestions" id="searchSuggestions">
+                    <!-- Suggestions will be added dynamically -->
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
-<!-- Main Content -->
-<main class="main-content">
-    <div class="container">
-        <!-- Sorting Controls -->
         <form method="get" action="/book" class="sorting-controls">
             <h2>Sort Books By:</h2>
             <div class="sort-buttons">
@@ -90,54 +85,59 @@
                 </select>
             </div>
         </form>
-        <!-- Book List -->
-        <div class="books-grid">
-            <div th:each="book : ${books}" class="book-card" onclick="showBookModal(this)"
-                th:data-title="${book.title}"
-                th:data-author="${book.author}"
-                th:data-datepublish="${book.datePublish}"
-                th:data-genre="${book.genre}"
-                th:data-language="${book.language}"
-                th:data-description="${book.description}"
-                th:data-status="${book.status}">
-                <div class="book-card-content">
-                    <h3 th:text="${book.title}">Book Title</h3>
-                    <p><strong>Author:</strong> <span th:text="${book.author}">Author</span></p>
-                    <p><strong>Published Date:</strong> <span th:text="${book.datePublish}">Date</span></p>
-                    <p><strong>Genre:</strong> <span th:text="${book.genre}">Genre</span></p>
-                    <p><strong>Language:</strong> <span th:text="${book.language}">Language</span></p>
-                    <p><strong>Description:</strong> <span th:text="${book.description}">Description</span></p>
-                    <p><strong>Status:</strong> <span th:text="${book.status}">Status</span></p>
-                </div>
-            </div>
-        </div>
-        <!-- Book Modal -->
-        <div id="bookModal" class="book-detail-modal">
-            <div class="modal-content" style="max-width: 520px; min-width: 320px; padding: 2.5rem 2rem;">
-                <button class="close-btn" onclick="closeBookModal()">&times;</button>
-                <div class="book-detail-content" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <h2 id="modalTitle" style="font-size: 2.2rem; font-weight: bold; margin-bottom: 0.5rem; color: #222;"></h2>
-                    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 0.5rem;">
-                        <div style="flex: 1 1 180px;">
-                            <p style="margin: 0 0 0.3rem 0;"><strong>Author:</strong> <span id="modalAuthor"></span></p>
-                            <p style="margin: 0 0 0.3rem 0;"><strong>Genre:</strong> <span id="modalGenre"></span></p>
-                            <p style="margin: 0 0 0.3rem 0;"><strong>Language:</strong> <span id="modalLanguage"></span></p>
-                        </div>
-                        <div style="flex: 1 1 120px;">
-                            <p style="margin: 0 0 0.3rem 0;"><strong>Published Date:</strong> <span id="modalDatePublish"></span></p>
-                            <p style="margin: 0 0 0.3rem 0;"><strong>Status:</strong> <span id="modalStatus"></span></p>
-                        </div>
-                    </div>
-                    <div style="margin: 1rem 0 1.5rem 0;">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.3rem; color: #374151;">Description</h3>
-                        <p id="modalDescription" style="color: #444; font-size: 1rem; line-height: 1.7; margin: 0;"></p>
-                    </div>
-                    <button id="reserveBtn" class="read-btn" style="align-self: flex-end; font-size: 1.1rem; padding: 0.7rem 2.2rem;">Reserve</button>
-                </div>
-            </div>
-        </div>
     </div>
-</main>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Book List -->
+            <div class="books-grid">
+                <div th:each="book : ${books}" class="book-card" onclick="showBookModal(this)"
+                    th:data-title="${book.title}"
+                    th:data-author="${book.author}"
+                    th:data-datepublish="${book.datePublish}"
+                    th:data-genre="${book.genre}"
+                    th:data-language="${book.language}"
+                    th:data-description="${book.description}"
+                    th:data-status="${book.status}">
+                    <div class="book-card-content">
+                        <h3 th:text="${book.title}">Book Title</h3>
+                        <p><strong>Author:</strong> <span th:text="${book.author}">Author</span></p>
+                        <p><strong>Published Date:</strong> <span th:text="${book.datePublish}">Date</span></p>
+                        <p><strong>Genre:</strong> <span th:text="${book.genre}">Genre</span></p>
+                        <p><strong>Language:</strong> <span th:text="${book.language}">Language</span></p>
+                        <p><strong>Description:</strong> <span th:text="${book.description}">Description</span></p>
+                        <p><strong>Status:</strong> <span th:text="${book.status}">Status</span></p>
+                    </div>
+                </div>
+            </div>
+            <!-- Book Modal -->
+            <div id="bookModal" class="book-detail-modal">
+                <div class="modal-content" style="max-width: 520px; min-width: 320px; padding: 2.5rem 2rem;">
+                    <button class="close-btn" onclick="closeBookModal()">&times;</button>
+                    <div class="book-detail-content" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <h2 id="modalTitle" style="font-size: 2.2rem; font-weight: bold; margin-bottom: 0.5rem; color: #222;"></h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 0.5rem;">
+                            <div style="flex: 1 1 180px;">
+                                <p style="margin: 0 0 0.3rem 0;"><strong>Author:</strong> <span id="modalAuthor"></span></p>
+                                <p style="margin: 0 0 0.3rem 0;"><strong>Genre:</strong> <span id="modalGenre"></span></p>
+                                <p style="margin: 0 0 0.3rem 0;"><strong>Language:</strong> <span id="modalLanguage"></span></p>
+                            </div>
+                            <div style="flex: 1 1 120px;">
+                                <p style="margin: 0 0 0.3rem 0;"><strong>Published Date:</strong> <span id="modalDatePublish"></span></p>
+                                <p style="margin: 0 0 0.3rem 0;"><strong>Status:</strong> <span id="modalStatus"></span></p>
+                            </div>
+                        </div>
+                        <div style="margin: 1rem 0 1.5rem 0;">
+                            <h3 style="font-size: 1.1rem; margin-bottom: 0.3rem; color: #374151;">Description</h3>
+                            <p id="modalDescription" style="color: #444; font-size: 1rem; line-height: 1.7; margin: 0;"></p>
+                        </div>
+                        <button id="reserveBtn" class="read-btn" style="align-self: flex-end; font-size: 1.1rem; padding: 0.7rem 2.2rem;">Reserve</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
 <script>
 const profileBtn = document.querySelector('.profile-btn');
 const profileDropdown = document.getElementById('profileDropdown');
@@ -224,7 +224,7 @@ function loadNotifications() {
     
     fetch('/api/student/notifications/count')
         .then(response => response.json())
-        .then(data => {
+        .then data => {
             notifications = data.notifications || [];
             const count = data.count || 0;
             

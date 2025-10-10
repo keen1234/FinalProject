@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +26,13 @@ public class SecurityConfig {
     public DaoAuthenticationProvider adminAuthenticationProvider(AdminDetailsService adminDetailsService, PasswordEncoder adminPasswordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(adminDetailsService);
         provider.setPasswordEncoder(adminPasswordEncoder);
+        return provider;
+    }
+
+    @Bean
+    public DaoAuthenticationProvider studentAuthenticationProvider(StudentDetailsService studentDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(studentDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
@@ -60,11 +66,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/admin/book", true)
+                .defaultSuccessUrl("/home", true)
                 .usernameParameter("email")
                 .permitAll()
             )
             .logout(logout -> logout.permitAll())
+            .authenticationProvider(studentAuthenticationProvider(studentDetailsService, passwordEncoder()))
             .authenticationProvider(adminAuthenticationProvider(adminDetailsService, adminPasswordEncoder()));
         return http.build();
     }

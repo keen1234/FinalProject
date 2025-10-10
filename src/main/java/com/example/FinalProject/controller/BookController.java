@@ -305,6 +305,7 @@ public class BookController {
         for (admin adm : admins) {
             Notification adminNotif = new Notification();
             adminNotif.setAdmin(adm);
+            adminNotif.setStudent(student); // Set student reference for admin notifications
             adminNotif.setMessage("New reservation request: '" + book.getTitle() + "' by " + student.getFirstName() + " " + student.getLastName());
             notificationRepository.save(adminNotif);
         }
@@ -327,11 +328,23 @@ public class BookController {
                 if (student != null && book != null) {
                     // Keep book status as reserved
                     book.setStatus(Book.Status.reserved);
-                    bookRepository.save(book);
                     
-                    // Keep reservation relationships intact
-                    // The book remains in student's reserved books
-                    // The student remains in book's reservers
+                    // Ensure reservation relationships are properly maintained
+                    final Student finalStudent = student;
+                    
+                    // Add book to student's reserved books if not already there
+                    if (student.getReservedBooks().stream().noneMatch(b -> b.getId().equals(book.getId()))) {
+                        student.getReservedBooks().add(book);
+                    }
+                    
+                    // Add student to book's reservers if not already there
+                    if (book.getReservers().stream().noneMatch(s -> s.getId().equals(finalStudent.getId()))) {
+                        book.getReservers().add(finalStudent);
+                    }
+                    
+                    // Save both entities to persist the relationships
+                    studentRepository.save(student);
+                    bookRepository.save(book);
                     
                     // Send acceptance notification to student
                     Notification notification = new Notification();
@@ -456,33 +469,26 @@ public class BookController {
                 Book book = borrowRecord.getBook();
                 Student student = borrowRecord.getStudent();
                 
-                // Update book status to reserved (student keeps the reservation)
-                book.setStatus(Book.Status.reserved);
-                bookRepository.save(book);
+                // Make book available for other users to reserve
+                book.setStatus(Book.Status.available);
                 
                 // Remove from borrowed relationships
                 student.getBorrowedBooks().removeIf(b -> b.getId().equals(book.getId()));
                 book.getBorrowers().removeIf(s -> s.getId().equals(student.getId()));
                 
-                // Add back to reserved relationships (student keeps the reservation)
-                if (student.getReservedBooks().stream().noneMatch(b -> b.getId().equals(book.getId()))) {
-                    student.getReservedBooks().add(book);
-                }
-                if (book.getReservers().stream().noneMatch(s -> s.getId().equals(student.getId()))) {
-                    book.getReservers().add(student);
-                }
+                // Clear any existing reservation relationships since book is now available
+                student.getReservedBooks().removeIf(b -> b.getId().equals(book.getId()));
+                book.getReservers().removeIf(s -> s.getId().equals(student.getId()));
                 
+                // Save the updated entities
                 studentRepository.save(student);
+                bookRepository.save(book);
                 
-                // Ensure there's an active reservation for this book and student
+                // Mark any existing reservations for this book-student pair as completed
                 List<Reservation> existingReservations = reservationRepository.findByStudentAndBookAndStatus(student, book, Reservation.Status.accepted);
-                if (existingReservations.isEmpty()) {
-                    // Create a new accepted reservation since the book is still reserved for this student
-                    Reservation newReservation = new Reservation();
-                    newReservation.setStudent(student);
-                    newReservation.setBook(book);
-                    newReservation.setStatus(Reservation.Status.accepted);
-                    reservationRepository.save(newReservation);
+                for (Reservation reservation : existingReservations) {
+                    reservation.setStatus(Reservation.Status.completed);
+                    reservationRepository.save(reservation);
                 }
                 
                 // Send return notification to student
@@ -492,9 +498,9 @@ public class BookController {
                 String message;
                 if (borrowRecord.isOverdue()) {
                     long overdueDays = Math.abs(borrowRecord.getDaysUntilDue());
-                    message = "Your book '" + book.getTitle() + "' has been returned. It was " + overdueDays + " day(s) overdue. The book is still reserved for you and you can borrow it again anytime.";
+                    message = "Your book '" + book.getTitle() + "' has been returned. It was " + overdueDays + " day(s) overdue. The book is now available for other users to reserve.";
                 } else {
-                    message = "Your book '" + book.getTitle() + "' has been returned successfully. The book is still reserved for you and you can borrow it again anytime.";
+                    message = "Your book '" + book.getTitle() + "' has been returned successfully. The book is now available for other users to reserve.";
                 }
                 
                 notification.setMessage(message);
