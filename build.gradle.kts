@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation ("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.1.4")
     implementation("org.projectlombok:lombok")
     implementation("javax.servlet:javax.servlet-api:4.0.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
