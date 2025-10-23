@@ -314,49 +314,50 @@ body {
 .main-content {
     padding: 2rem 0;
 }
-.main-content c
 
-    /* Sorting Controls */
+/* Sorting Controls (adjusted to be subtle) */
 .sorting-controls {
-    background: #838383;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-block-end: 2rem;
+    background: transparent;
+    padding: 0.5rem 0;
+    border-radius: 6px;
+    margin-block-end: 1rem;
+    border: none;
+    box-shadow: none;
 }
 
 .sorting-controls h2 {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-block-end: 1rem;
+    margin: 0 0 0.5rem 0;
     color: #374151;
 }
 
 .sort-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
 .sort-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    background-color: #c3c3c3;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: transparent;
     color: #374151;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    font-size: 0.95rem;
 }
 
 .sort-btn:hover {
-    background-color: #e5e7eb;
+    background: #f3f4f6;
 }
 
 .sort-btn.active {
-    background-color: #3b82f6;
-    color: white;
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
 }
 
 .sort-btn i {
@@ -364,13 +365,13 @@ body {
 }
 
 #genreSort {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    background-color: #c3c3c3;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #fff;
     color: #374151;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
 /* Books Grid */
@@ -675,22 +676,166 @@ body {
     }
 }
 
-/* Utility Classes */
-.hidden {
-    display: none;
+/* === Sidebar & Right-column tables for home page === */
+.page-container {
+    max-width: 1100px;
+    margin: 1.5rem auto;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    padding: 0 1rem;
 }
 
-.text-center {
+.main-col {
+    flex: 1 1 65%;
+    min-width: 0; /* allow flex children to shrink properly */
+}
+
+.sidebar {
+    flex: 0 0 32%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 0.75rem 0.85rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(15,23,42,0.04);
+}
+
+.sidebar-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.05rem;
+    color: #111827;
+    font-weight: 600;
+}
+
+.book-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    color: #374151;
+    background: transparent;
+}
+
+.book-table thead th {
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    padding: 0.55rem 0.5rem;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.book-table tbody td {
+    padding: 0.55rem 0.5rem;
+    border-bottom: 1px dashed rgba(14, 20, 30, 0.04);
+    vertical-align: middle;
+}
+
+.book-table tbody tr:hover td {
+    background: rgba(59,130,246,0.03);
+}
+
+.book-table td.empty {
     text-align: center;
+    padding: 0.75rem;
+    color: #9ca3af;
+    font-style: italic;
 }
 
-.mb-4 {
-    margin-block-end: 1rem;
+.book-title {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.mt-4 {
-    margin-block-start: 1rem;
+.book-date {
+    color: #374151;
+    font-weight: 500;
 }
+
+/* small accessory: badge for overdue items */
+.badge-overdue {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.15rem 0.4rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    margin-left: 0.35rem;
+}
+
+/* Accessibility helper */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Responsive behaviour */
+@media (max-width: 980px) {
+    .page-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+    .sidebar {
+        width: 100%;
+        max-width: none;
+        order: 2;
+    }
+    .main-col {
+        order: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-title {
+        font-size: 1rem;
+    }
+    .book-table thead {
+        display: none; /* simplify on very small screens */
+    }
+    .book-table tbody td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .book-table tbody tr {
+        display: block;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .book-table tbody td:before {
+        content: attr(data-label) ": ";
+        font-weight: 600;
+        color: #6b7280;
+        display: inline-block;
+        width: 6.5rem;
+    }
+}
+
+/* small tweak to keep sidebar visible when page is long */
+@media (min-width: 981px) {
+    .sidebar {
+        position: sticky;
+        top: 96px; /* accounts for navbar height */
+    }
+}
+
+/* End of sidebar/table styles */
 
 .profile-menu { position: relative; }
 .profile-btn {

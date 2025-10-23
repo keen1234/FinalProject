@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
@@ -49,6 +49,69 @@
     </div>
 </nav>
 <div id="notificationBar" class="notification-bar"></div>
+
+<!-- New content: two-column layout with right sidebar for Due and Reserved books -->
+<main class="page-container">
+    <section class="main-col">
+        <div class="welcome">
+            <h1>Welcome to the Librowse</h1>
+            <p>Explore books, borrow, and manage your reservations.</p>
+        </div>
+
+        <!-- Example main content placeholder (keep the page useful without backend data) -->
+        <div class="content-placeholder">
+            <p>Browse our collection or use the search bar above to find books.</p>
+        </div>
+    </section>
+
+    <aside class="sidebar" aria-label="Your books">
+        <div class="sidebar-card">
+            <h2 class="sidebar-title">Due Books</h2>
+            <table class="book-table" role="table" aria-describedby="due-books-desc">
+                <caption id="due-books-desc" class="sr-only">List of your overdue or soon-to-be-due books</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${dueBooks == null or #lists.isEmpty(dueBooks)}">
+                        <td colspan="2" class="empty">No due books</td>
+                    </tr>
+                    <tr th:each="book : ${dueBooks}">
+                        <td data-label="Title" th:text="${book.title}">Book Title</td>
+                        <td data-label="Due Date" th:text="${book.dueDate}">2025-10-23</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sidebar-card">
+            <h2 class="sidebar-title">Reserved Books</h2>
+            <table class="book-table" role="table" aria-describedby="reserved-books-desc">
+                <caption id="reserved-books-desc" class="sr-only">List of books you have reserved</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Reserved On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${reservedBooks == null or #lists.isEmpty(reservedBooks)}">
+                        <td colspan="2" class="empty">No reserved books</td>
+                    </tr>
+                    <tr th:each="book : ${reservedBooks}">
+                        <td data-label="Title" th:text="${book.title}">Book Title</td>
+                        <td data-label="Reserved On" th:text="${book.reservationDate}">2025-10-01</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </aside>
+</main>
+
+<!-- existing scripts -->
 <script>
 const profileBtn = document.querySelector('.profile-btn');
 const profileDropdown = document.getElementById('profileDropdown');
