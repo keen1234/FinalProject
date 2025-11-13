@@ -33,6 +33,11 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     List<BorrowRecord> findBooksDueSoon(@Param("status") BorrowRecord.Status status, 
                                         @Param("currentDate") LocalDate currentDate, 
                                         @Param("dueSoonDate") LocalDate dueSoonDate);
+
+    // Returns borrow records for the given student where the book is currently borrowed.
+    // Replace `BORROWED` with your actual enum constant if different.
+    @Query("SELECT br FROM BorrowRecord br WHERE br.student.id = :studentId AND br.status = com.example.FinalProject.model.BorrowRecord.Status.BORROWED ORDER BY br.dueDate ASC")
+    List<BorrowRecord> findDueByStudentId(@Param("studentId") Long studentId);
     
     // Find all borrow records for a student (for history)
     List<BorrowRecord> findByStudentOrderByBorrowedDateDesc(Student student);

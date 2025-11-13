@@ -1,3 +1,4 @@
+
 package com.example.FinalProject.controller;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +18,12 @@ import com.example.FinalProject.service.AdminService;
 import com.example.FinalProject.model.Notification;
 import com.example.FinalProject.repository.NotificationRepository;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.FinalProject.repository.BorrowRecordRepository;
+import com.example.FinalProject.repository.ReservationRepository;
+import com.example.FinalProject.model.BorrowRecord;
+import com.example.FinalProject.model.Reservation;
+import com.example.FinalProject.model.StudentDetails;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,19 +33,41 @@ import java.util.List;
 public class MainController {
     @Autowired
     private AdminService adminService;
-    
+
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private BorrowRecordRepository borrowRecordRepository;
+
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     @GetMapping("/home")
     public String home(Authentication authentication, Model model) {
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.example.FinalProject.model.StudentDetails) {
             com.example.FinalProject.model.StudentDetails userDetails = (com.example.FinalProject.model.StudentDetails) authentication.getPrincipal();
             model.addAttribute("student", userDetails.getStudent());
-            
+
             // Add unread notification count for initial display
             List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(userDetails.getStudent());
             model.addAttribute("unreadNotificationCount", unreadNotifications.size());
+
+            // Fetch due books and reserved books for the current student and add to model
+            try {
+                Long studentId = userDetails.getStudent().getId();
+                List<BorrowRecord> dueBooks = borrowRecordRepository.findDueByStudentId(studentId);
+                List<Reservation> reservedBooks = reservationRepository.findActiveByStudentId(studentId);
+                model.addAttribute("dueBooks", dueBooks);
+                model.addAttribute("reservedBooks", reservedBooks);
+            } catch (Exception e) {
+                // In case repository methods or IDs are not available, ensure attributes exist
+                model.addAttribute("dueBooks", List.of());
+                model.addAttribute("reservedBooks", List.of());
+            }
+        } else {
+            model.addAttribute("dueBooks", List.of());
+            model.addAttribute("reservedBooks", List.of());
         }
         return "home";
     }
@@ -48,7 +76,7 @@ public class MainController {
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof com.example.FinalProject.model.StudentDetails) {
             com.example.FinalProject.model.StudentDetails userDetails = (com.example.FinalProject.model.StudentDetails) authentication.getPrincipal();
             model.addAttribute("student", userDetails.getStudent());
-            
+
             // Add unread notification count for initial display
             List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(userDetails.getStudent());
             model.addAttribute("unreadNotificationCount", unreadNotifications.size());
