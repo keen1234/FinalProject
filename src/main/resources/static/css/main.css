@@ -1355,10 +1355,111 @@ a:hover {
 }
 
 .search-sort-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin-top: 32px;
-  margin-bottom: 24px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 1.5rem auto;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* Ensure the search area keeps its preferred width but can shrink on small screens */
+.search-sort-center .search-bar-wrapper {
+    flex: 1 1 480px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Make sorting controls centered and visually grouped */
+.sorting-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex: 0 0 320px;
+}
+
+.sorting-controls .sort-buttons {
+    justify-content: center;
+}
+
+/* Polished table style for book management (used when switching to table view) */
+.book-management-table {
+    width: 100%;
+    max-width: 1100px;
+    margin: 1rem auto 2rem auto;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(15,23,42,0.06);
+}
+
+.book-management-table thead th {
+    background: linear-gradient(180deg, #111827, #1f2937);
+    color: #fff;
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.book-management-table tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.book-management-table tbody tr:hover td {
+    background: #f9fafb;
+}
+
+.book-management-table .actions-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.book-management-table .btn-sm {
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.book-management-table .btn-edit {
+    background: #f3f4f6;
+    color: #111827;
+    border-color: #e5e7eb;
+}
+
+.book-management-table .btn-delete {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+@media (max-width: 780px) {
+    .search-sort-center {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0.75rem;
+    }
+    .sorting-controls {
+        width: 100%;
+        flex: 0 0 auto;
+    }
+    .search-sort-center .search-bar-wrapper {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+    .book-management-table thead th, .book-management-table tbody td {
+        padding: 0.6rem 0.7rem;
+    }
 }

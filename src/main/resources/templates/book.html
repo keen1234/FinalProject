@@ -88,27 +88,40 @@
     </div>
     <!-- Main Content -->
     <main class="main-content">
-        <div class="container">
+        <div class="container-inner">
             <!-- Book List -->
-            <div class="books-grid">
-                <div th:each="book : ${books}" class="book-card" onclick="showBookModal(this)"
-                    th:data-title="${book.title}"
-                    th:data-author="${book.author}"
-                    th:data-datepublish="${book.datePublish}"
-                    th:data-genre="${book.genre}"
-                    th:data-language="${book.language}"
-                    th:data-description="${book.description}"
-                    th:data-status="${book.status}">
-                    <div class="book-card-content">
-                        <h3 th:text="${book.title}">Book Title</h3>
-                        <p><strong>Author:</strong> <span th:text="${book.author}">Author</span></p>
-                        <p><strong>Published Date:</strong> <span th:text="${book.datePublish}">Date</span></p>
-                        <p><strong>Genre:</strong> <span th:text="${book.genre}">Genre</span></p>
-                        <p><strong>Language:</strong> <span th:text="${book.language}">Language</span></p>
-                        <p><strong>Description:</strong> <span th:text="${book.description}">Description</span></p>
-                        <p><strong>Status:</strong> <span th:text="${book.status}">Status</span></p>
-                    </div>
-                </div>
+            <div class="table-container">
+                <table class="book-management-table" role="table" aria-label="Books Table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Genre</th>
+                            <th>Published</th>
+                            <th>Language</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="book : ${books}"
+                            th:attr="data-title=${book.title}, data-author=${book.author}, data-datepublish=${book.datePublish}, data-genre=${book.genre}, data-language=${book.language}, data-description=${book.description}, data-status=${book.status}">
+                            <td><span class="book-title" th:text="${book.title}">Book Title</span></td>
+                            <td th:text="${book.author}">Author</td>
+                            <td th:text="${book.genre}">Genre</td>
+                            <td th:text="${book.datePublish}">Date</td>
+                            <td th:text="${book.language}">Language</td>
+                            <td th:text="${book.status}">Status</td>
+                            <td class="actions-cell">
+                                <button class="btn-sm btn-edit" type="button" th:onclick="|showBookModal(this.closest('tr'))|">View</button>
+                                <!-- Add edit/delete buttons here if needed -->
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(books)}">
+                            <td class="empty" colspan="7">No books found.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <!-- Book Modal -->
             <div id="bookModal" class="book-detail-modal">
@@ -221,18 +234,23 @@ if (isAuthenticated) {
 
 function loadNotifications() {
     if (!isAuthenticated) return;
-    
+
     fetch('/api/student/notifications/count')
-        .then(response => response.json())
-        .then data => {
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
             notifications = data.notifications || [];
             const count = data.count || 0;
-            
-            if (count > 0) {
-                notificationCount.textContent = count;
-                notificationCount.style.display = 'inline-block';
-            } else {
-                notificationCount.style.display = 'none';
+
+            if (notificationCount) {
+                if (count > 0) {
+                    notificationCount.textContent = count;
+                    notificationCount.style.display = 'inline-block';
+                } else {
+                    notificationCount.style.display = 'none';
+                }
             }
         })
         .catch(error => {
@@ -240,36 +258,41 @@ function loadNotifications() {
         });
 }
 
-notificationBell.addEventListener('click', function() {
-    if (notifications.length > 0) {
-        // Show notifications in a more user-friendly way
-        const notificationMessages = notifications.map(n => n.message).join('\n\n');
-        alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
-        
-        // Mark notifications as read
-        fetch('/api/student/notifications/mark-read', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Clear notification count
-                notifications = [];
-                notificationCount.style.display = 'none';
-                notificationCount.textContent = '0';
-            }
-        })
-        .catch(error => {
-            console.error('Error marking notifications as read:', error);
-        });
-    } else {
-        // Suggest checking the notifications page
-        alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
-    }
-});
+// Only attach click handler if the element exists
+if (notificationBell) {
+    notificationBell.addEventListener('click', function() {
+        if (notifications.length > 0) {
+            // Show notifications in a more user-friendly way
+            const notificationMessages = notifications.map(n => n.message).join('\n\n');
+            alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
+
+            // Mark notifications as read
+            fetch('/api/student/notifications/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Clear notification count
+                    notifications = [];
+                    if (notificationCount) {
+                        notificationCount.style.display = 'none';
+                        notificationCount.textContent = '0';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notifications as read:', error);
+            });
+        } else {
+            // Suggest checking the notifications page
+            alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
+        }
+    });
+}
 
 function showNotification(message, type = 'success') {
     const bar = document.getElementById('notificationBar');
