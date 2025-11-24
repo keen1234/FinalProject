@@ -514,6 +514,50 @@ body {
     position: relative;
 }
 
+/* Book modal — compact variant and inner layout moved from inline styles in book.html */
+.modal-content.modal-compact {
+    max-width: 520px;
+    min-width: 320px;
+    padding: 2.5rem 2rem;
+}
+.modal-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #222;
+}
+.modal-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+.modal-col {
+    flex: 1 1 180px;
+}
+.modal-col.right {
+    flex: 1 1 120px;
+}
+.modal-meta-row p {
+    margin: 0 0 0.3rem 0;
+}
+.modal-description h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+    color: #374151;
+}
+.modal-description p {
+    color: #444;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin: 0;
+}
+#reserveBtn {
+    align-self: flex-end;
+    font-size: 1.1rem;
+    padding: 0.7rem 2.2rem;
+}
+
 .close-btn {
     position: absolute;
     inset-block-start: 1rem;
@@ -769,6 +813,68 @@ body {
     border-radius: 6px;
     font-size: 0.75rem;
     margin-left: 0.35rem;
+}
+
+/* Status badge styles */
+.status-available {
+    background-color: #059669; /* darker/more saturated green (emerald-600) */
+    color: #ffffff; /* white text for contrast */
+    padding: 0.32rem 0.8rem;
+    border-radius: 999px;
+    display: inline-block;
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(5,150,105,0.18);
+    border: 1px solid rgba(4,120,87,0.18);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+.status-reserved {
+    background-color: #ea580c; /* darker/more saturated orange (orange-600) */
+    color: #ffffff; /* white text for contrast */
+    padding: 0.32rem 0.8rem;
+    border-radius: 999px;
+    display: inline-block;
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(234,88,12,0.18);
+    border: 1px solid rgba(210,80,10,0.18);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+.status-borrowed {
+    background-color: #db2777; /* darker/more saturated magenta (rose-600) */
+    color: #ffffff; /* white text for contrast */
+    padding: 0.32rem 0.8rem;
+    border-radius: 999px;
+    display: inline-block;
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(219,39,119,0.18);
+    border: 1px solid rgba(200,30,100,0.18);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+/* Ensure the badge fills the TD and is centered when class applied to the TD itself */
+.book-management-table tbody td.status-available,
+.book-management-table tbody td.status-reserved,
+.book-management-table tbody td.status-borrowed {
+    vertical-align: middle;
+    text-align: center;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+}
+/* Modal badge adjustments: ensure white text and clear background */
+#modalStatus.status-available, #modalStatus.status-reserved, #modalStatus.status-borrowed {
+    padding: 0.28rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 800;
+    display: inline-block;
+    color: #ffffff;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+/* Make badges keyboard-focus-visible for accessibility */
+.status-available:focus, .status-reserved:focus, .status-borrowed:focus,
+.book-management-table td.status-available:focus, .book-management-table td.status-reserved:focus, .book-management-table td.status-borrowed:focus {
+    outline: 3px solid rgba(59,130,246,0.18);
+    outline-offset: 2px;
 }
 
 /* Accessibility helper */
@@ -1462,4 +1568,28 @@ a:hover {
     .book-management-table thead th, .book-management-table tbody td {
         padding: 0.6rem 0.7rem;
     }
+}
+
+/* Make each table row behave like a clickable item when marked role="button" */
+.book-management-table tbody tr[role="button"] {
+    cursor: pointer;
+}
+.book-management-table tbody tr[role="button"] td {
+    transition: background 0.12s ease, color 0.12s ease;
+}
+.book-management-table tbody tr[role="button"]:hover td {
+    background: #f9fbfe; /* subtle hover */
+}
+.book-management-table tbody tr[role="button"]:focus {
+    outline: none;
+    background: #f0f8ff;
+}
+.book-management-table tbody tr[role="button"]:focus-visible {
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+    border-radius: 4px;
+}
+
+/* Remove default button-like focus ring on keyboard activation for consistent look */
+.book-management-table tbody tr[role="button"]:active td {
+    background: #eef6ff;
 }

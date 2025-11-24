@@ -100,51 +100,52 @@
                             <th>Published</th>
                             <th>Language</th>
                             <th>Status</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="book : ${books}"
-                            th:attr="data-title=${book.title}, data-author=${book.author}, data-datepublish=${book.datePublish}, data-genre=${book.genre}, data-language=${book.language}, data-description=${book.description}, data-status=${book.status}">
+                            th:attr="data-title=${book.title}, data-author=${book.author}, data-datepublish=${book.datePublish}, data-genre=${book.genre}, data-language=${book.language}, data-description=${book.description}, data-status=${book.status}"
+                            th:onclick="|showBookModal(this)|"
+                            role="button"
+                            tabindex="0"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showBookModal(this); }">
                             <td><span class="book-title" th:text="${book.title}">Book Title</span></td>
                             <td th:text="${book.author}">Author</td>
                             <td th:text="${book.genre}">Genre</td>
                             <td th:text="${book.datePublish}">Date</td>
                             <td th:text="${book.language}">Language</td>
-                            <td th:text="${book.status}">Status</td>
-                            <td class="actions-cell">
-                                <button class="btn-sm btn-edit" type="button" th:onclick="|showBookModal(this.closest('tr'))|">View</button>
-                                <!-- Add edit/delete buttons here if needed -->
-                            </td>
+                            <!-- add a status-specific class on the TD so it gets the right background -->
+                            <td th:text="${book.status}"
+                                th:classappend="${book.status != null} ? (${#strings.toLowerCase(book.status)} == 'available' ? ' status-available' : (${#strings.toLowerCase(book.status)} == 'reserved' or ${#strings.toLowerCase(book.status)} == 'reserve' ? ' status-reserved' : (${#strings.toLowerCase(book.status)} == 'borrowed' ? ' status-borrowed' : ''))) : ''">Status</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(books)}">
-                            <td class="empty" colspan="7">No books found.</td>
+                            <td class="empty" colspan="6">No books found.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <!-- Book Modal -->
             <div id="bookModal" class="book-detail-modal">
-                <div class="modal-content" style="max-width: 520px; min-width: 320px; padding: 2.5rem 2rem;">
+                <div class="modal-content modal-compact">
                     <button class="close-btn" onclick="closeBookModal()">&times;</button>
-                    <div class="book-detail-content" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                        <h2 id="modalTitle" style="font-size: 2.2rem; font-weight: bold; margin-bottom: 0.5rem; color: #222;"></h2>
-                        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 0.5rem;">
-                            <div style="flex: 1 1 180px;">
-                                <p style="margin: 0 0 0.3rem 0;"><strong>Author:</strong> <span id="modalAuthor"></span></p>
-                                <p style="margin: 0 0 0.3rem 0;"><strong>Genre:</strong> <span id="modalGenre"></span></p>
-                                <p style="margin: 0 0 0.3rem 0;"><strong>Language:</strong> <span id="modalLanguage"></span></p>
+                    <div class="book-detail-content">
+                        <h2 id="modalTitle" class="modal-title"></h2>
+                        <div class="modal-meta-row">
+                            <div class="modal-col">
+                                <p><strong>Author:</strong> <span id="modalAuthor"></span></p>
+                                <p><strong>Genre:</strong> <span id="modalGenre"></span></p>
+                                <p><strong>Language:</strong> <span id="modalLanguage"></span></p>
                             </div>
-                            <div style="flex: 1 1 120px;">
-                                <p style="margin: 0 0 0.3rem 0;"><strong>Published Date:</strong> <span id="modalDatePublish"></span></p>
-                                <p style="margin: 0 0 0.3rem 0;"><strong>Status:</strong> <span id="modalStatus"></span></p>
+                            <div class="modal-col right">
+                                <p><strong>Published Date:</strong> <span id="modalDatePublish"></span></p>
+                                <p><strong>Status:</strong> <span id="modalStatus"></span></p>
                             </div>
                         </div>
-                        <div style="margin: 1rem 0 1.5rem 0;">
-                            <h3 style="font-size: 1.1rem; margin-bottom: 0.3rem; color: #374151;">Description</h3>
-                            <p id="modalDescription" style="color: #444; font-size: 1rem; line-height: 1.7; margin: 0;"></p>
+                        <div class="modal-description">
+                            <h3>Description</h3>
+                            <p id="modalDescription"></p>
                         </div>
-                        <button id="reserveBtn" class="read-btn" style="align-self: flex-end; font-size: 1.1rem; padding: 0.7rem 2.2rem;">Reserve</button>
+                        <button id="reserveBtn" class="read-btn">Reserve</button>
                     </div>
                 </div>
             </div>
@@ -182,7 +183,16 @@ function showBookModal(card) {
     document.getElementById('modalGenre').textContent = card.getAttribute('data-genre');
     document.getElementById('modalLanguage').textContent = card.getAttribute('data-language');
     document.getElementById('modalDescription').textContent = card.getAttribute('data-description');
-    document.getElementById('modalStatus').textContent = card.getAttribute('data-status');
+    // set modal status text and apply matching badge class
+    const modalStatusEl = document.getElementById('modalStatus');
+    const statusText = card.getAttribute('data-status') || '';
+    modalStatusEl.textContent = statusText;
+    // remove any previous status classes
+    modalStatusEl.classList.remove('status-available', 'status-reserved', 'status-borrowed');
+    const st = (statusText || '').toString().trim().toLowerCase();
+    if (st === 'available') modalStatusEl.classList.add('status-available');
+    else if (st === 'reserved' || st === 'reserve') modalStatusEl.classList.add('status-reserved');
+    else if (st === 'borrowed' || st === 'barrowed') modalStatusEl.classList.add('status-borrowed');
     document.getElementById('bookModal').classList.add('show');
 }
 function closeBookModal() {
@@ -306,6 +316,119 @@ function showNotification(message, type = 'success') {
         setTimeout(loadNotifications, 1000);
     }
 }
+
+// Search functionality: filter table rows by title, author, or genre
+(function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const table = document.querySelector('.book-management-table');
+    if (!searchInput || !table) return;
+
+    const tbody = table.tBodies[0];
+    if (!tbody) return;
+
+    function normalize(s) {
+        return (s || '').toString().trim().toLowerCase();
+    }
+
+    function showAll() {
+        Array.from(tbody.rows).forEach(row => {
+            row.style.display = '';
+            row.setAttribute('aria-hidden', 'false');
+        });
+    }
+
+    function filterBooks() {
+        const qRaw = searchInput.value || '';
+        const q = normalize(qRaw);
+
+        if (q === '') {
+            showAll();
+            return;
+        }
+
+        // First check for exact title match (if the user typed the full title)
+        const exactMatches = [];
+        Array.from(tbody.rows).forEach(row => {
+            const title = normalize(row.getAttribute('data-title'));
+            if (title === q) exactMatches.push(row);
+        });
+
+        if (exactMatches.length > 0) {
+            // show only the exact ones
+            Array.from(tbody.rows).forEach(row => {
+                if (exactMatches.includes(row)) {
+                    row.style.display = '';
+                    row.setAttribute('aria-hidden', 'false');
+                } else {
+                    row.style.display = 'none';
+                    row.setAttribute('aria-hidden', 'true');
+                }
+            });
+            return;
+        }
+
+        // Tokenized prefix matching: split query into tokens and require all tokens
+        // to match the start of at least one word in title, author, or genre.
+        const tokens = q.split(/\s+/).filter(Boolean);
+
+        Array.from(tbody.rows).forEach(row => {
+            const title = normalize(row.getAttribute('data-title'));
+            const author = normalize(row.getAttribute('data-author'));
+            const genre = normalize(row.getAttribute('data-genre'));
+
+            const titleWords = title.split(/\s+/).filter(Boolean);
+            const authorWords = author.split(/\s+/).filter(Boolean);
+            const genreWords = genre.split(/\s+/).filter(Boolean);
+
+            const allWords = titleWords.concat(authorWords, genreWords);
+
+            const matches = tokens.every(tok => allWords.some(w => w.startsWith(tok)));
+
+            if (matches) {
+                row.style.display = '';
+                row.setAttribute('aria-hidden', 'false');
+            } else {
+                row.style.display = 'none';
+                row.setAttribute('aria-hidden', 'true');
+            }
+        });
+    }
+
+    // handle input events (live search)
+    searchInput.addEventListener('input', function() {
+        // if user clears quickly, show all
+        filterBooks();
+    });
+
+    // Enter key triggers the filter (redundant with input but helpful)
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            filterBooks();
+        }
+    });
+
+    // Search button
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            filterBooks();
+            searchInput.focus();
+        });
+    }
+
+    // Clear button
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            searchInput.value = '';
+            showAll();
+            searchInput.focus();
+        });
+    }
+})();
 </script>
 </body>
 </html>
