@@ -6,7 +6,6 @@ import com.example.FinalProject.model.Notification;
 import com.example.FinalProject.repository.CourseRepository;
 import com.example.FinalProject.repository.StudentRepository;
 import com.example.FinalProject.repository.NotificationRepository;
-import com.example.FinalProject.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.WebDataBinder;
@@ -28,13 +27,15 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
+// New imports
+import com.example.FinalProject.repository.BorrowRecordRepository;
+import com.example.FinalProject.repository.ReservationRepository;
+import com.example.FinalProject.model.BorrowRecord;
+import com.example.FinalProject.model.Reservation;
 
 @Controller
 public class StudentController {
     private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
-
-    @Autowired
-    private StudentService studentService;
 
     @Autowired
     private CourseRepository courseRepository;
@@ -47,6 +48,13 @@ public class StudentController {
     
     @Autowired
     private NotificationRepository notificationRepository;
+
+    // Autowire new repositories
+    @Autowired
+    private BorrowRecordRepository borrowRecordRepository;
+
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -123,6 +131,28 @@ public class StudentController {
             if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
                 Student student = userDetails.getStudent();
                 model.addAttribute("student", student);
+
+                // Pass BorrowRecord list directly so Thymeleaf can access br.book and br.dueDate
+                try {
+                    List<BorrowRecord> borrowRecords = borrowRecordRepository.findDueByStudentId(student.getId());
+                    model.addAttribute("dueBooks", borrowRecords != null ? borrowRecords : new ArrayList<BorrowRecord>());
+                } catch (Exception e) {
+                    logger.error("Error loading borrow records for student {}: {}", student.getId(), e.getMessage());
+                    model.addAttribute("dueBooks", new ArrayList<BorrowRecord>());
+                }
+
+                // Pass Reservation list directly so Thymeleaf can access r.book and r.createdAt
+                try {
+                    List<Reservation> reservedList = new ArrayList<>();
+                    List<Reservation> pending = reservationRepository.findByStudentAndStatus(student, Reservation.Status.pending);
+                    if (pending != null) reservedList.addAll(pending);
+                    List<Reservation> accepted = reservationRepository.findByStudentAndStatus(student, Reservation.Status.accepted);
+                    if (accepted != null) reservedList.addAll(accepted);
+                    model.addAttribute("reservedBooks", reservedList);
+                } catch (Exception e) {
+                    logger.error("Error loading reservations for student {}: {}", student.getId(), e.getMessage());
+                    model.addAttribute("reservedBooks", new ArrayList<Reservation>());
+                }
             }
         }
         return "home";

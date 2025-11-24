@@ -79,9 +79,10 @@
                     <tr th:if="${dueBooks == null or #lists.isEmpty(dueBooks)}">
                         <td colspan="2" class="empty">No due books</td>
                     </tr>
-                    <tr th:each="book : ${dueBooks}">
-                        <td data-label="Title" th:text="${book.title}">Book Title</td>
-                        <td data-label="Due Date" th:text="${book.dueDate}">2025-10-23</td>
+                    <!-- Iterate BorrowRecord objects (br) -->
+                    <tr th:each="br : ${dueBooks}">
+                        <td data-label="Title" th:text="${br.book != null ? br.book.title : 'Unknown Title'}">Book Title</td>
+                        <td data-label="Due Date" th:text="${br.dueDate != null ? #temporals.format(br.dueDate, 'yyyy-MM-dd') : ''}">2025-10-23</td>
                     </tr>
                 </tbody>
             </table>
@@ -101,9 +102,10 @@
                     <tr th:if="${reservedBooks == null or #lists.isEmpty(reservedBooks)}">
                         <td colspan="2" class="empty">No reserved books</td>
                     </tr>
-                    <tr th:each="book : ${reservedBooks}">
-                        <td data-label="Title" th:text="${book.title}">Book Title</td>
-                        <td data-label="Reserved On" th:text="${book.reservationDate}">2025-10-01</td>
+                    <!-- Iterate Reservation objects (r) -->
+                    <tr th:each="r : ${reservedBooks}">
+                        <td data-label="Title" th:text="${r.book != null ? r.book.title : 'Book Title'}">Book Title</td>
+                        <td data-label="Reserved On" th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd') : ''}">2025-10-01</td>
                     </tr>
                 </tbody>
             </table>
