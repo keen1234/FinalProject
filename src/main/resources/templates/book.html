@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Book</title>
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/book.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script th:inline="javascript">
         var isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
@@ -14,82 +15,99 @@
 <nav class="navbar" aria-label="Main Navigation">
     <div class="navbar-content">
         <div class="nav-center">
-            <ul class="nav-links">
+            <ul id="navLinks" class="nav-links">
                 <li><a href="/" class="nav-link">Home</a></li>
                 <li><a href="/book" class="nav-link active">Book</a></li>
                 <li><a href="/about" class="nav-link">About</a></li>
             </ul>
         </div>
+        <!-- Mobile hamburger (visible on small screens) -->
+        <button id="hamburgerBtn" class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">
+            <span class="bar"></span>
+        </button>
         <div class="nav-auth">
             <button id="notificationBell" class="notification-bell" title="Notifications" aria-label="Notifications">
                 <i class="fa fa-bell"></i>
                 <span id="notificationCount" class="notification-count">0</span>
             </button>
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
-            <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn">
-                    <span class="profile-logo" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</span>
+            <div class="profile-menu"
+                 sec:authorize="isAuthenticated()"
+                 th:with="studentDetails=${#authentication.principal},
+                          student=${studentDetails.student}">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
+                    <span class="profile-logo" th:text="${student.firstName.substring(0,1)}">U</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
-                        <div class="profile-logo-large" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</div>
-                        <strong th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}" th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong>
-                        <span th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}" th:text="${#authentication.principal.student.email}">user@email.com</span>
+                        <div class="profile-logo-large" th:text="${student.firstName.substring(0,1)}">U</div>
+                        <div class="profile-text-block">
+                            <strong class="profile-name" th:text="${student.firstName + ' ' + student.lastName}">User Name</strong>
+                            <span class="profile-email" th:text="${student.email}">user@email.com</span>
+                        </div>
                     </div>
-                    <hr>
+                    <hr class="profile-divider">
                     <a href="/userprofile" class="profile-link">Profile</a>
                     <a href="/student/notifications" class="profile-link">Notifications</a>
-                    <div style="height: 30px;"></div>
-                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                    <div class="profile-spacer"></div>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 <div id="notificationBar" class="notification-bar"></div>
+
 <div class="books-main-center">
-    <div class="search-sort-center">
-        <div class="search-bar-wrapper">
-            <div class="search-container" id="search-container">
-                <label for="searchInput" class="visually-hidden">Search Books</label>
-                <input type="text" id="searchInput" placeholder="Search books">
-                <button class="search-btn" id="searchBtn" type="button">
-                    <i class="fas fa-search"></i>
-                </button>
-                <span class="search-label">Search</span>
-                <button class="clear-btn" id="clearBtn" type="button">
-                    <i class="fas fa-times"></i> Clear
-                </button>
-                <div class="search-loading" id="searchLoading"></div>
-                <div class="search-suggestions" id="searchSuggestions">
-                    <!-- Suggestions will be added dynamically -->
-                </div>
-            </div>
-        </div>
-        <form method="get" action="/book" class="sorting-controls">
-            <h2>Sort Books By:</h2>
-            <div class="sort-buttons">
-                <button class="sort-btn" type="submit" name="sort" value="title">
-                    <i class="fas fa-font"></i> Title
-                </button>
-                <button class="sort-btn" type="submit" name="sort" value="author">
-                    <i class="fas fa-user"></i> Author
-                </button>
-                <button class="sort-btn" type="submit" name="sort" value="date">
-                    <i class="fas fa-calendar"></i> Date
-                </button>
-                <label for="genreSort" class="visually-hidden">Sort by Genre</label>
-                <select id="genreSort" name="genre" onchange="this.form.submit()">
-                    <option value="">All Genres</option>
-                    <option th:each="genre : ${genres}" th:value="${genre}" th:text="${genre}"></option>
-                </select>
-            </div>
-        </form>
-    </div>
-    <!-- Main Content -->
     <main class="main-content">
-        <div class="container-inner">
-            <!-- Book List -->
+        <div class="book-page-wrapper">
+            <div class="book-page-header book-page-header--search">
+                <!-- Header kept empty so only search/sort bar shows, matching design -->
+            </div>
+
+            <div class="search-sort-center">
+                <form method="get" action="/book" class="search-bar-wrapper">
+                    <div class="search-container" id="search-container">
+                        <input type="text"
+                               id="searchInput"
+                               name="search"
+                               placeholder="Search books"
+                               th:value="${param.search}">
+                        <button class="search-btn" id="searchBtn" type="submit" aria-label="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <div class="search-loading" id="searchLoading"></div>
+                        <div class="search-suggestions" id="searchSuggestions">
+                            <!-- Suggestions will be added dynamically -->
+                        </div>
+                    </div>
+                </form>
+                <form method="get" action="/book" class="sorting-controls">
+                    <div class="sorting-row top">
+                        <span class="sorting-label">Sort Books By:</span>
+                        <div class="sort-buttons">
+                            <button class="sort-btn" type="submit" name="sort" value="title">
+                                <i class="fas fa-font"></i> Title
+                            </button>
+                            <button class="sort-btn" type="submit" name="sort" value="author">
+                                <i class="fas fa-user"></i> Author
+                            </button>
+                            <button class="sort-btn" type="submit" name="sort" value="date">
+                                <i class="fas fa-calendar"></i> Date
+                            </button>
+                        </div>
+                    </div>
+                    <div class="sorting-row bottom">
+                        <span class="sorting-label-genre">Sort by Genre</span>
+                        <label for="genreSort" class="visually-hidden">Sort by Genre</label>
+                        <select id="genreSort" name="genre" onchange="this.form.submit()">
+                            <option value="">All Genres</option>
+                            <option th:each="genre : ${genres}" th:value="${genre}" th:text="${genre}"></option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
             <div class="table-container">
                 <table class="book-management-table" role="table" aria-label="Books Table">
                     <thead>
@@ -114,7 +132,6 @@
                             <td th:text="${book.genre}">Genre</td>
                             <td th:text="${book.datePublish}">Date</td>
                             <td th:text="${book.language}">Language</td>
-                            <!-- add a status-specific class on the TD so it gets the right background -->
                             <td th:text="${book.status}"
                                 th:classappend="${book.status != null} ? (${#strings.toLowerCase(book.status)} == 'available' ? ' status-available' : (${#strings.toLowerCase(book.status)} == 'reserved' or ${#strings.toLowerCase(book.status)} == 'reserve' ? ' status-reserved' : (${#strings.toLowerCase(book.status)} == 'borrowed' ? ' status-borrowed' : ''))) : ''">Status</td>
                         </tr>
@@ -124,6 +141,7 @@
                     </tbody>
                 </table>
             </div>
+
             <!-- Book Modal -->
             <div id="bookModal" class="book-detail-modal">
                 <div class="modal-content modal-compact">
@@ -152,6 +170,7 @@
         </div>
     </main>
 </div>
+
 <script>
 const profileBtn = document.querySelector('.profile-btn');
 const profileDropdown = document.getElementById('profileDropdown');
@@ -164,13 +183,19 @@ if (profileBtn && profileDropdown) {
         dropdownOpen = !dropdownOpen;
         if (dropdownOpen) {
             profileDropdown.classList.add('show');
+            profileBtn.setAttribute('aria-expanded', 'true');
+            profileDropdown.setAttribute('aria-hidden', 'false');
         } else {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
         }
     });
     document.addEventListener('click', function(e) {
         if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
             dropdownOpen = false;
         }
     });
@@ -183,11 +208,9 @@ function showBookModal(card) {
     document.getElementById('modalGenre').textContent = card.getAttribute('data-genre');
     document.getElementById('modalLanguage').textContent = card.getAttribute('data-language');
     document.getElementById('modalDescription').textContent = card.getAttribute('data-description');
-    // set modal status text and apply matching badge class
     const modalStatusEl = document.getElementById('modalStatus');
     const statusText = card.getAttribute('data-status') || '';
     modalStatusEl.textContent = statusText;
-    // remove any previous status classes
     modalStatusEl.classList.remove('status-available', 'status-reserved', 'status-borrowed');
     const st = (statusText || '').toString().trim().toLowerCase();
     if (st === 'available') modalStatusEl.classList.add('status-available');
@@ -233,12 +256,8 @@ const notificationBell = document.getElementById('notificationBell');
 const notificationCount = document.getElementById('notificationCount');
 let notifications = [];
 
-// Only load notifications if user is authenticated
 if (isAuthenticated) {
-    // Load notifications on page load
     loadNotifications();
-    
-    // Refresh notifications every 30 seconds
     setInterval(loadNotifications, 30000);
 }
 
@@ -268,15 +287,12 @@ function loadNotifications() {
         });
 }
 
-// Only attach click handler if the element exists
 if (notificationBell) {
     notificationBell.addEventListener('click', function() {
         if (notifications.length > 0) {
-            // Show notifications in a more user-friendly way
             const notificationMessages = notifications.map(n => n.message).join('\n\n');
-            alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
+            alert('\ud83d\udcec Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
 
-            // Mark notifications as read
             fetch('/api/student/notifications/mark-read', {
                 method: 'POST',
                 headers: {
@@ -286,7 +302,6 @@ if (notificationBell) {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Clear notification count
                     notifications = [];
                     if (notificationCount) {
                         notificationCount.style.display = 'none';
@@ -298,8 +313,7 @@ if (notificationBell) {
                 console.error('Error marking notifications as read:', error);
             });
         } else {
-            // Suggest checking the notifications page
-            alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
+            alert('\ud83d\udd14 No new notifications\n\nCheck your notifications page for older messages!');
         }
     });
 }
@@ -310,19 +324,17 @@ function showNotification(message, type = 'success') {
     bar.className = 'notification-bar ' + type;
     bar.style.display = 'block';
     setTimeout(() => { bar.style.display = 'none'; }, 3500);
-    
-    // Refresh notifications after showing a notification
+
     if (isAuthenticated) {
         setTimeout(loadNotifications, 1000);
     }
 }
 
-// Search functionality: filter table rows by title, author, or genre
 (function() {
     const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const table = document.querySelector('.book-management-table');
+    const searchBtn   = document.getElementById('searchBtn');
+    const table       = document.querySelector('.book-management-table');
+    const searchForm  = searchInput ? searchInput.closest('form') : null;
     if (!searchInput || !table) return;
 
     const tbody = table.tBodies[0];
@@ -348,7 +360,6 @@ function showNotification(message, type = 'success') {
             return;
         }
 
-        // First check for exact title match (if the user typed the full title)
         const exactMatches = [];
         Array.from(tbody.rows).forEach(row => {
             const title = normalize(row.getAttribute('data-title'));
@@ -356,7 +367,6 @@ function showNotification(message, type = 'success') {
         });
 
         if (exactMatches.length > 0) {
-            // show only the exact ones
             Array.from(tbody.rows).forEach(row => {
                 if (exactMatches.includes(row)) {
                     row.style.display = '';
@@ -369,8 +379,6 @@ function showNotification(message, type = 'success') {
             return;
         }
 
-        // Tokenized prefix matching: split query into tokens and require all tokens
-        // to match the start of at least one word in title, author, or genre.
         const tokens = q.split(/\s+/).filter(Boolean);
 
         Array.from(tbody.rows).forEach(row => {
@@ -396,38 +404,65 @@ function showNotification(message, type = 'success') {
         });
     }
 
-    // handle input events (live search)
     searchInput.addEventListener('input', function() {
-        // if user clears quickly, show all
         filterBooks();
     });
 
-    // Enter key triggers the filter (redundant with input but helpful)
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
+            if (searchForm) {
+                return; // let form submit
+            }
             e.preventDefault();
             filterBooks();
         }
     });
 
-    // Search button
     if (searchBtn) {
         searchBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            filterBooks();
-            searchInput.focus();
+            if (!searchForm) {
+                e.preventDefault();
+                filterBooks();
+                searchInput.focus();
+            }
         });
+    }
+})();
+
+(function() {
+    const hamburger = document.getElementById('hamburgerBtn');
+    const navLinks = document.getElementById('navLinks');
+    if (!hamburger || !navLinks) return;
+
+    function closeMenu() {
+        navLinks.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('body-menu-open');
     }
 
-    // Clear button
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            searchInput.value = '';
-            showAll();
-            searchInput.focus();
-        });
-    }
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = navLinks.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        document.body.classList.toggle('body-menu-open', isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!navLinks.classList.contains('open')) return;
+        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 560) closeMenu();
+    });
+
+    navLinks.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        if (window.innerWidth <= 560) closeMenu();
+    });
 })();
 </script>
 </body>

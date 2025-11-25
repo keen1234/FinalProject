@@ -1,0 +1,37 @@
+/* Admin-specific overrides and styles extracted from main.css */
+
+/* Admin navbar can reuse main navbar base; add only overrides here if needed. */
+
+/* Admin profile menu uses the same structure but can have different colors if desired. For now, we just rely on main.css. */
+
+/* Example: if you later want a different avatar color for admins, you could uncomment:
+.admin-page .profile-btn {
+    background: #f97316; // orange for admin
+}
+*/
+
+/* Admin-specific overrides for navbar/profile */
+
+/* Make admin avatar slightly larger and keep existing blue tone */
+.admin-logo {
+    width: 72px;
+    height: 72px;
+    font-size: 2.1rem;
+}
+
+.admin-status {
+    font-size: 0.9rem;
+    color: #16a34a; /* bright green for Active status */
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Slightly tighter dropdown for admin so it feels compact over the wide admin table page */
+.profile-dropdown {
+    padding-top: 1.2rem;
+    padding-bottom: 1.4rem;
+}
+
+.profile-dropdown .profile-info {
+    gap: 0.65rem;
+}

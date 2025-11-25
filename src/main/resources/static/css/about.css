@@ -1,0 +1,231 @@
+/* about.css: styles for the About page 3D ring and layout */
+
+.navbar-top {
+  position: relative;
+  z-index: 50; /* above background and ring */
+}
+
+.main-section.main-below-nav {
+  margin-top: 0;          /* align directly under nav */
+  padding-top: 1.25rem;   /* small gap under nav */
+}
+
+.main-section {
+  min-height: calc(100vh - 64px);
+  padding: 0 1.5rem 3rem; /* top padding handled by .main-below-nav */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #ffffff;    /* normal white background */
+  color: #111827;         /* dark text color for readability on white */
+}
+
+/* Ensure the dotted dark overlay is not visible on this page */
+#dot-background.background {
+  display: none;
+}
+
+.typing-text {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 30px;  /* moved down by 30px */
+  margin-bottom: 2.5rem;
+  text-align: center;
+  color: #000000; /* gray text for "Hello, Meet My Team" */
+}
+
+/* Typing effect characters: start hidden, fade in when .visible is added */
+.typing-char {
+  opacity: 0;
+  display: inline-block;
+  transition: opacity 0.12s linear;
+}
+
+.typing-char.visible {
+  opacity: 1;
+}
+
+/* Optional blinking caret for the typing text */
+.typing-text::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  background: currentColor;
+  animation: typing-caret 0.8s steps(1) infinite;
+}
+
+@keyframes typing-caret {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+#ring-container {
+  position: relative;
+  width: min(900px, 100%);
+  height: 420px;
+  perspective: 1600px;
+  margin-top: 20rem;   /* moved down so the ring is more in the middle of the page */
+  display: flex;           /* center the ring within this container */
+  align-items: center;
+  justify-content: center;
+}
+
+#ring {
+  width: 420px;   /* make ring area square so rotation is about center */
+  height: 420px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-out;
+  cursor: grab;
+  margin: 0 auto; /* center within container */
+}
+
+.ring-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* true center anchor */
+  transform-style: preserve-3d;
+}
+
+.card {
+  width: 190px;
+  height: 260px;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  box-shadow: 0 22px 45px rgba(0,0,0,0.55);
+  outline: none;
+}
+
+.card:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 4px;
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.card-face.front {
+  background-size: cover;
+  background-position: center;
+}
+
+.card-face.back {
+  background: radial-gradient(circle at top, rgba(15,23,42,0.96), rgba(15,23,42,0.98));
+  display: flex;
+  align-items: flex-end;
+  padding: 1.2rem;
+}
+
+.card .back-content h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+}
+
+.card .back-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #e5e7eb;
+}
+
+/* Lightbox */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.72);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+  z-index: 40;
+}
+
+#lightbox.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox-content {
+  background: #020617;
+  border-radius: 18px;
+  max-width: min(960px, 92vw);
+  width: 100%;
+  max-height: 92vh;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  color: #f9fafb;
+}
+
+.lightbox-media {
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  min-height: 280px;
+}
+
+.lightbox-text h2 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+}
+
+.lightbox-back {
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  #ring-container {
+    height: 360px;
+  }
+
+  .card {
+    width: 160px;
+    height: 220px;
+  }
+}
+
+@media (max-width: 720px) {
+  #ring-container {
+    height: 320px;
+  }
+
+  .lightbox-content {
+    grid-template-columns: 1fr;
+    max-height: 90vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ring,
+  .card,
+  .typing-char {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

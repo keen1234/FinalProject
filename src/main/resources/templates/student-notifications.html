@@ -91,10 +91,10 @@
                 <span id="notificationCount" class="notification-count" style="display:none;">0</span>
             </button>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
                     <span class="profile-logo" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
                         <div class="profile-logo-large" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</div>
                         <div th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}">
@@ -108,7 +108,7 @@
                     <a href="/userprofile" class="profile-link">Profile</a>
                     <a href="/student/notifications" class="profile-link">Notifications</a>
                     <div style="height: 30px;"></div>
-                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
@@ -164,13 +164,19 @@ if (profileBtn && profileDropdown) {
         dropdownOpen = !dropdownOpen;
         if (dropdownOpen) {
             profileDropdown.classList.add('show');
+            profileBtn.setAttribute('aria-expanded', 'true');
+            profileDropdown.setAttribute('aria-hidden', 'false');
         } else {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
         }
     });
     document.addEventListener('click', function(e) {
         if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
             dropdownOpen = false;
         }
     });

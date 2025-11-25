@@ -19,10 +19,10 @@
         <div class="nav-auth">
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn" onclick="document.getElementById('profileDropdown').classList.toggle('show')">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
                     <span class="profile-logo" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
                         <div class="profile-logo-large" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</div>
                         <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong><br>
@@ -31,7 +31,7 @@
                     <hr>
                     <a href="/userprofile" class="profile-link">Profile</a>
                     <div style="height: 30px;"></div>
-                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
@@ -58,13 +58,32 @@
     </section>
 </main>
 <script>
-document.addEventListener('click', function(e) {
-    var dropdown = document.getElementById('profileDropdown');
-    var btn = document.querySelector('.profile-btn');
-    if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.remove('show');
-    }
-});
+const _profileBtn = document.querySelector('.profile-btn');
+const _profileDropdown = document.getElementById('profileDropdown');
+let _dropdownOpen = false;
+if (_profileBtn && _profileDropdown) {
+    _profileBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        _dropdownOpen = !_dropdownOpen;
+        if (_dropdownOpen) {
+            _profileDropdown.classList.add('show');
+            _profileBtn.setAttribute('aria-expanded', 'true');
+            _profileDropdown.setAttribute('aria-hidden', 'false');
+        } else {
+            _profileDropdown.classList.remove('show');
+            _profileBtn.setAttribute('aria-expanded', 'false');
+            _profileDropdown.setAttribute('aria-hidden', 'true');
+        }
+    });
+    document.addEventListener('click', function(e) {
+        if (_dropdownOpen && ! _profileBtn.contains(e.target) && ! _profileDropdown.contains(e.target)) {
+            _profileDropdown.classList.remove('show');
+            _profileBtn.setAttribute('aria-expanded', 'false');
+            _profileDropdown.setAttribute('aria-hidden', 'true');
+            _dropdownOpen = false;
+        }
+    });
+}
 </script>
 </body>
 </html>

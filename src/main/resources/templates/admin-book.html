@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Management</title>
+    <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/book.css">
+    <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -19,20 +21,20 @@
         <div class="nav-auth">
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
                     <span class="profile-logo" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
-                    <div class="profile-info" style="display: flex; flex-direction: column; align-items: center; padding: 1.5rem 0 0.5rem 0;">
-                        <div class="profile-logo-large" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}" style="background: #3b82f6; color: #fff; font-size: 2.5rem; font-weight: bold; border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"></div>
-                        <div th:if="${admin != null}" style="width: 100%; text-align: center;">
-                            <strong th:text="${admin.name}" style="font-size:1.2em; display: block; margin-bottom: 0.3rem;"></strong>
-                            <span th:text="${admin.email}" style="color:#888;font-size:1em; display: block; margin-bottom: 0.3rem;"></span>
-                            <span th:text="${admin.status}" style="color:#007b00;font-size:1em; display: block; margin-bottom: 0.7rem;"></span>
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
+                    <div class="profile-info">
+                        <div class="profile-logo-large admin-logo" th:text="${admin != null and admin.name != null && #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</div>
+                        <div class="profile-text-block" th:if="${admin != null}">
+                            <strong class="profile-name" th:text="${admin.name}">Admin Name</strong>
+                            <span class="profile-email" th:text="${admin.email}">adminkenth@gmail.com</span>
+                            <span class="admin-status" th:text="${admin.status}">online</span>
                         </div>
-                        <hr style="width: 90%; margin: 0.7rem auto 0.7rem auto; border: none; border-top: 1px solid #ddd;">
-                        <a href="/logout" class="profile-link logout" style="display: block; background: #ffeaea; color: #e53935; font-weight: bold; border-radius: 8px; padding: 0.8rem 0; text-align: center; margin: 0.5rem 0 0 0; font-size: 1.1em;">Logout</a>
                     </div>
+                    <hr>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
@@ -79,19 +81,6 @@ function borrowReservedBook(reservationId) {
         <div class="container-inner">
             <div id="notificationBar" class="notification-bar" style="display:none;"></div>
             <div id="persistentNotificationBar" class="notification-bar" style="display:none; position:static; margin-bottom:1rem;"></div>
-
-            <!-- Student Search -->
-            <div class="form-section">
-                <h2>Search Students</h2>
-                <form method="get" action="/admin/book" class="search-form">
-                    <input type="text" name="studentSearch" placeholder="Search by student name..."
-                           th:value="${studentSearch}" class="search-input"/>
-                    <button type="submit" class="search-btn">
-                        <i class="fa fa-search"></i> Search
-                    </button>
-                    <a href="/admin/book" class="clear-btn">Clear</a>
-                </form>
-            </div>
 
             <!-- Search Results -->
             <div th:if="${searchResults != null and #lists.size(searchResults) > 0}" class="table-container">
@@ -218,6 +207,19 @@ function borrowReservedBook(reservationId) {
                     <input type="text" name="language" placeholder="Language" required />
                     <textarea name="description" placeholder="Description"></textarea>
                     <button type="submit">Add Book</button>
+                </form>
+            </div>
+
+            <!-- Student Search (moved below Add New Book) -->
+            <div class="form-section">
+                <h2>Search Students</h2>
+                <form method="get" action="/admin/book" class="search-form">
+                    <input type="text" name="studentSearch" placeholder="Search by student name..."
+                           th:value="${studentSearch}" class="search-input"/>
+                    <button type="submit" class="search-btn" aria-label="Search students">
+                        <i class="fa fa-search"></i>
+                    </button>
+                    <a href="/admin/book" class="clear-btn">Clear</a>
                 </form>
             </div>
 
@@ -518,6 +520,36 @@ window.addEventListener('pageshow', function(event) {
     if (event.persisted) {
         window.location.reload();
     }
+});
+</script>
+<!-- Dropdown toggle script (admin-book) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const pBtn = document.querySelector('.profile-btn');
+  const pDropdown = document.getElementById('profileDropdown');
+  let open = false;
+  if (!pBtn || !pDropdown) return;
+  pBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    open = !open;
+    if (open) {
+      pDropdown.classList.add('show');
+      pBtn.setAttribute('aria-expanded', 'true');
+      pDropdown.setAttribute('aria-hidden', 'false');
+    } else {
+      pDropdown.classList.remove('show');
+      pBtn.setAttribute('aria-expanded', 'false');
+      pDropdown.setAttribute('aria-hidden', 'true');
+    }
+  });
+  document.addEventListener('click', function(e) {
+    if (open && !pBtn.contains(e.target) && !pDropdown.contains(e.target)) {
+      pDropdown.classList.remove('show');
+      pBtn.setAttribute('aria-expanded', 'false');
+      pDropdown.setAttribute('aria-hidden', 'true');
+      open = false;
+    }
+  });
 });
 </script>
 </html>

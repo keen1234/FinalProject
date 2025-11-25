@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Home</title>
-    <link rel="stylesheet" href="/css/book.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
 <nav class="navbar" aria-label="Main Navigation">
@@ -17,10 +18,10 @@
         <div class="nav-auth">
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
                     <span class="profile-logo" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
                         <div class="profile-logo-large" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</div>
                         <div th:if="${admin != null}">
@@ -31,7 +32,7 @@
                     </div>
                     <hr>
                     <div style="height: 30px;"></div>
-                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
@@ -53,13 +54,19 @@ if (profileBtn && profileDropdown) {
         dropdownOpen = !dropdownOpen;
         if (dropdownOpen) {
             profileDropdown.classList.add('show');
+            profileBtn.setAttribute('aria-expanded', 'true');
+            profileDropdown.setAttribute('aria-hidden', 'false');
         } else {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
         }
     });
     document.addEventListener('click', function(e) {
         if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
             dropdownOpen = false;
         }
     });

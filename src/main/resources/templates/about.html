@@ -5,18 +5,24 @@
     <title>About</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/about.css">
+    <!-- 3D image ring styles (styles are included inline or in static/css; external reference removed) -->
+    <!-- <link rel="stylesheet" href="/css/ring.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<nav class="navbar" aria-label="Main Navigation">
+<nav class="navbar navbar-top" aria-label="Main Navigation">
     <div class="navbar-content">
         <div class="nav-center">
-            <ul class="nav-links">
+            <ul id="navLinks" class="nav-links">
                 <li><a href="/" class="nav-link">Home</a></li>
                 <li><a href="/book" class="nav-link">Book</a></li>
                 <li><a href="/about" class="nav-link active">About</a></li>
             </ul>
         </div>
+        <!-- Mobile hamburger (visible on small screens) -->
+        <button id="hamburgerBtn" class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">
+            <span class="bar"></span>
+        </button>
         <div class="nav-auth">
             <button id="notificationBell" class="notification-bell" title="Notifications" aria-label="Notifications">
                 <i class="fa fa-bell"></i>
@@ -25,27 +31,137 @@
                       th:text="${unreadNotificationCount ?: 0}">0</span>
             </button>
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
-            <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn">
-                    <span class="profile-logo" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</span>
+            <div class="profile-menu" sec:authorize="isAuthenticated()"
+                 th:with="sd=${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}"
+                 th:object="${sd}">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
+                    <span class="profile-logo" th:text="${#authentication.principal.student.firstName.substring(0,1) ?: 'U'}">U</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
-                        <div class="profile-logo-large" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</div>
-                        <strong th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}" th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong>
-                        <span th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}" th:text="${#authentication.principal.student.email}">user@email.com</span>
+                        <div class="profile-logo-large" th:text="${#authentication.principal.student.firstName.substring(0,1) ?: 'U'}">U</div>
+                        <div>
+                            <div style="display:flex;flex-direction:column;align-items:center;">
+                                <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}" style="font-size:1.1em;">User Name</strong>
+                                <span th:text="${#authentication.principal.student.email}" style="color:#888;font-size:0.95em;margin-top:2px;">user@email.com</span>
+                            </div>
+                        </div>
                     </div>
                     <hr>
                     <a href="/userprofile" class="profile-link">Profile</a>
                     <a href="/student/notifications" class="profile-link">Notifications</a>
-                    <div style="height: 30px;"></div>
-                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 <div id="notificationBar" class="notification-bar"></div>
+<main>
+<!-- 3D Image Ring Section -->
+<section id="main" class="main-section main-below-nav">
+  <!-- Typing Text -->
+  <div id="typing-text" data-delay="500" data-duration="2000" data-loop="true" class="typing-text">
+    Introducing The team behind the Librows
+  </div>
+  <!-- Dot Background only -->
+  <div id="dot-background" class="background active" aria-hidden="true">
+    <div class="background-layer dot-layer"></div>
+    <div class="background-fade"></div>
+    <div class="content" hidden>
+      <h1>Dots</h1>
+    </div>
+  </div>
+
+  <div id="ring-container">
+    <div id="ring">
+      <!-- Replace with your own images -->
+      <div class="ring-image">
+        <div class="card" tabindex="0" role="button" aria-label="Flip card 1">
+          <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=1');"></div>
+          <div class="card-face back">
+            <div class="back-content">
+              <h3>City in the Clouds</h3>
+              <p>Sample text: A serene skyline peeks above the morning fog.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ring-image">
+        <div class="card" tabindex="0" role="button" aria-label="Flip card 2">
+          <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=2');"></div>
+          <div class="card-face back">
+            <div class="back-content">
+              <h3>Glass and Steel</h3>
+              <p>Sample text: A modern tower rises from a sea of clouds.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ring-image">
+        <div class="card" tabindex="0" role="button" aria-label="Flip card 3">
+          <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=3');"></div>
+          <div class="card-face back">
+            <div class="back-content">
+              <h3>Twilight Hues</h3>
+              <p>Sample text: Distant hills fade into a tranquil purple sky.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ring-image">
+        <div class="card" tabindex="0" role="button" aria-label="Flip card 4">
+          <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=4');"></div>
+          <div class="card-face back">
+            <div class="back-content">
+              <h3>Golden Friends</h3>
+              <p>Sample text: Two pups enjoy a sunny afternoon in the park.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ring-image">
+        <div class="card" tabindex="0" role="button" aria-label="Flip card 5">
+          <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=5');"></div>
+          <div class="card-face back">
+            <div class="back-content">
+              <h3>Verdant Frame</h3>
+              <p>Sample text: A portrait framed by rich green foliage.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ring-image">
+        <div class="card" tabindex="0" role="button" aria-label="Flip card 6">
+          <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=6');"></div>
+          <div class="card-face back">
+            <div class="back-content">
+              <h3>Stripes</h3>
+              <p>Sample text: A close look reveals the majesty of stripes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- duplicate placeholders removed for brevity; add more .ring-image blocks as needed -->
+    </div>
+  </div>
+
+  <!-- Lightbox Modal for full-screen view -->
+  <div id="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="lightbox-backdrop" data-close></div>
+    <div class="lightbox-content" role="document">
+      <button class="lightbox-back" type="button" aria-label="Back" data-close>← Back</button>
+      <div class="lightbox-media"></div>
+      <div class="lightbox-text">
+        <h2 class="lightbox-title"></h2>
+        <p class="lightbox-description"></p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<!-- Ring JS (script is inlined below; external reference removed) -->
+<!-- <script src="/js/ring.js"></script> -->
 <script>
 const profileBtn = document.querySelector('.profile-btn');
 const profileDropdown = document.getElementById('profileDropdown');
@@ -58,13 +174,19 @@ if (profileBtn && profileDropdown) {
         dropdownOpen = !dropdownOpen;
         if (dropdownOpen) {
             profileDropdown.classList.add('show');
+            profileBtn.setAttribute('aria-expanded', 'true');
+            profileDropdown.setAttribute('aria-hidden', 'false');
         } else {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
         }
     });
     document.addEventListener('click', function(e) {
         if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
             dropdownOpen = false;
         }
     });
@@ -88,7 +210,8 @@ if (isAuthenticated) {
 
 function loadNotifications() {
     if (!isAuthenticated) return;
-    
+    if (!notificationCount) return;
+
     fetch('/api/student/notifications/count')
         .then(response => response.json())
         .then(data => {
@@ -107,39 +230,44 @@ function loadNotifications() {
         });
 }
 
-notificationBell.addEventListener('click', function() {
-    if (notifications.length > 0) {
-        // Show notifications in a more user-friendly way
-        const notificationMessages = notifications.map(n => n.message).join('\n\n');
-        alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
-        
-        // Mark notifications as read
-        fetch('/api/student/notifications/mark-read', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Clear notification count
-                notifications = [];
-                notificationCount.style.display = 'none';
-                notificationCount.textContent = '0';
-            }
-        })
-        .catch(error => {
-            console.error('Error marking notifications as read:', error);
-        });
-    } else {
-        // Suggest checking the notifications page
-        alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
-    }
-});
+if (notificationBell) {
+    notificationBell.addEventListener('click', function() {
+        if (notifications.length > 0) {
+            // Show notifications in a more user-friendly way
+            const notificationMessages = notifications.map(n => n.message).join('\n\n');
+            alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
+
+            // Mark notifications as read
+            fetch('/api/student/notifications/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Clear notification count
+                    notifications = [];
+                    if (notificationCount) {
+                        notificationCount.style.display = 'none';
+                        notificationCount.textContent = '0';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notifications as read:', error);
+            });
+        } else {
+            // Suggest checking the notifications page
+            alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
+        }
+    });
+}
 
 function showNotification(message, type = 'success') {
     const bar = document.getElementById('notificationBar');
+    if (!bar) return;
     bar.textContent = message;
     bar.className = 'notification-bar ' + type + ' show';
     bar.style.display = 'block';
@@ -153,6 +281,270 @@ function showNotification(message, type = 'success') {
         setTimeout(loadNotifications, 1000);
     }
 }
+
+// Inserted ring carousel, lightbox, drag and typing script
+const ring = document.getElementById("ring");
+const images = document.querySelectorAll(".ring-image");
+const cards = document.querySelectorAll(".card");
+
+// Lightbox elements
+const lightbox = document.getElementById('lightbox');
+const lbMedia = document.querySelector('.lightbox-media');
+const lbTitle = document.querySelector('.lightbox-title');
+const lbDesc = document.querySelector('.lightbox-description');
+
+const imageCount = images.length;
+const angleStep = imageCount > 0 ? 360 / imageCount : 0;
+const imageDistance = 500;
+let rotationY = 0;
+
+let startX = 0;
+let isDragging = false;
+let velocity = 0;
+let lastX = 0;
+let animationFrame;
+
+// Position images around the ring, anchored at true center
+images.forEach((img, i) => {
+  img.style.transform = `translate(-50%, -50%) rotateY(${i * -angleStep}deg) translateZ(${imageDistance}px)`;
+});
+
+// Flip interactions
+cards.forEach((card) => {
+  // Prevent drag from starting when intention is to flip
+  card.addEventListener("mousedown", (e) => e.stopPropagation());
+  card.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+  card.addEventListener("click", () => {
+    if (isDragging) return; // if a drag just happened, ignore click
+    openLightboxFromCard(card);
+  });
+  card.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openLightboxFromCard(card);
+    }
+  });
+});
+
+// Apply background image to back-face via CSS var for blur layer
+cards.forEach((card) => {
+  const front = card.querySelector('.card-face.front');
+  const bg = front ? getComputedStyle(front).backgroundImage : null;
+  if (bg && bg !== 'none') {
+    card.style.setProperty('--bg', bg);
+  }
+});
+
+// Scroll wheel to rotate the ring
+if (ring) {
+  ring.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+    // Scale for a comfortable spin; negative to make natural scroll direction
+    rotationY += delta * 0.2;
+    ring.style.transform = `rotateY(${rotationY}deg)`;
+  }, { passive: false });
+}
+
+function openLightboxFromCard(card) {
+  const front = card.querySelector('.card-face.front');
+  const title = card.querySelector('.back-content h3')?.textContent || '';
+  const desc = card.querySelector('.back-content p')?.textContent || '';
+  const bg = front ? getComputedStyle(front).backgroundImage : 'none';
+
+  if (lbMedia) lbMedia.style.backgroundImage = bg;
+  if (lbTitle) lbTitle.textContent = title;
+  if (lbDesc) lbDesc.textContent = desc;
+
+  if (lightbox) {
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+  }
+
+  // Disable ring interactions while open
+  disableRingInteractions();
+}
+
+function closeLightbox() {
+  if (lightbox) {
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+  }
+  enableRingInteractions();
+}
+
+// Close handlers: back button, backdrop, and Esc key
+if (document.querySelectorAll('[data-close]')) {
+  document.querySelectorAll('[data-close]').forEach((el) => {
+    el.addEventListener('click', closeLightbox);
+  });
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lightbox && lightbox.classList.contains('open')) {
+    closeLightbox();
+  }
+});
+
+function disableRingInteractions() {
+  if (ring) ring.style.pointerEvents = 'none';
+}
+
+function enableRingInteractions() {
+  if (ring) ring.style.pointerEvents = '';
+}
+
+// Mouse/touch drag start
+function startDrag(e) {
+  if (!ring) return;
+  isDragging = true;
+  startX = e.touches ? e.touches[0].clientX : e.clientX;
+  lastX = startX;
+  ring.style.cursor = "grabbing";
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+}
+
+function onDrag(e) {
+  if (!isDragging) return;
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const deltaX = x - lastX;
+  velocity = deltaX * 0.5;
+  rotationY += velocity;
+  if (ring) ring.style.transform = `rotateY(${rotationY}deg)`;
+  lastX = x;
+}
+
+function endDrag() {
+  if (!isDragging) return;
+  isDragging = false;
+  if (ring) ring.style.cursor = "grab";
+  inertia();
+}
+
+// Inertia animation
+function inertia() {
+  velocity *= 0.95; // friction
+  rotationY += velocity;
+  if (ring) ring.style.transform = `rotateY(${rotationY}deg)`;
+  if (Math.abs(velocity) > 0.1) {
+    animationFrame = requestAnimationFrame(inertia);
+  }
+}
+
+// Hover effect: dim others
+images.forEach((img, i) => {
+  img.addEventListener("mouseenter", () => {
+    if (isDragging) return;
+    images.forEach((other, j) => {
+      if (j !== i) other.style.opacity = "0.5";
+    });
+  });
+
+  img.addEventListener("mouseleave", () => {
+    if (isDragging) return;
+    images.forEach(other => (other.style.opacity = "1"));
+  });
+});
+
+// Events
+if (ring) {
+  ring.addEventListener("mousedown", startDrag);
+  ring.addEventListener("touchstart", startDrag, { passive: true });
+}
+window.addEventListener("mousemove", onDrag);
+window.addEventListener("touchmove", onDrag, { passive: true });
+window.addEventListener("mouseup", endDrag);
+window.addEventListener("touchend", endDrag);
+
+// Typing animation (provided implementation)
+function initTypingText(el) {
+  const text = el.textContent;
+  el.textContent = ""; // clear initial
+  const delay = parseInt(el.dataset.delay || "0", 10);
+  const duration = parseInt(el.dataset.duration || "2000", 10);
+  const loopAttr = String(el.dataset.loop || "false").toLowerCase();
+  // loop modes: false -> no repeat; "true" -> infinite; "once" -> exactly one repeat
+  const loopMode = loopAttr === "true" ? "infinite" : loopAttr === "once" ? "once" : "none";
+
+  const chars = text.split("").map(c => (c === " " ? "\u00A0" : c));
+  const perCharDelay = duration / Math.max(chars.length, 1);
+
+  // Create span for each character
+  chars.forEach(char => {
+    const span = document.createElement("span");
+    span.textContent = char;
+    span.classList.add("typing-char");
+    el.appendChild(span);
+  });
+
+  const spans = el.querySelectorAll(".typing-char");
+
+  let repeatsLeft = loopMode === 'once' ? 1 : 0;
+
+  function animate() {
+    spans.forEach((span, i) => {
+      setTimeout(() => {
+        span.classList.add("visible");
+      }, delay + i * perCharDelay);
+    });
+
+    if (loopMode === 'infinite' || repeatsLeft > 0) {
+      // Reset after animation completes
+      setTimeout(() => {
+        spans.forEach(span => span.classList.remove("visible"));
+        if (repeatsLeft > 0) repeatsLeft -= 1;
+        animate(); // restart
+      }, delay + duration + 1000);
+    }
+  }
+
+  animate();
+}
+
+// Init all .typing-text
+document.querySelectorAll(".typing-text").forEach(el => {
+  initTypingText(el);
+});
+
+// Mobile hamburger toggle behavior (match home.html)
+(function() {
+    const hamburger = document.getElementById('hamburgerBtn');
+    const navLinks = document.getElementById('navLinks');
+    if (!hamburger || !navLinks) return;
+
+    function closeMenu() {
+        navLinks.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('body-menu-open');
+    }
+
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = navLinks.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        document.body.classList.toggle('body-menu-open', isOpen);
+    });
+
+    // Close when clicking outside the menu
+    document.addEventListener('click', (e) => {
+        if (!navLinks.classList.contains('open')) return;
+        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    // Close on resize to larger screens
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 560) closeMenu();
+    });
+
+    // Close when a nav link is clicked (use event delegation)
+    navLinks.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        if (window.innerWidth <= 560) closeMenu();
+    });
+})();
 </script>
 </body>
 </html>

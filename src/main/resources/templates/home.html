@@ -5,17 +5,21 @@
     <title>Home</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    </head>
+</head>
 <body>
 <nav class="navbar" aria-label="Main Navigation">
     <div class="navbar-content">
         <div class="nav-center">
-            <ul class="nav-links">
+            <ul id="navLinks" class="nav-links">
                 <li><a href="/" class="nav-link active">Home</a></li>
                 <li><a href="/book" class="nav-link">Book</a></li>
                 <li><a href="/about" class="nav-link">About</a></li>
             </ul>
         </div>
+        <!-- Mobile hamburger (visible on small screens) -->
+        <button id="hamburgerBtn" class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">
+            <span class="bar"></span>
+        </button>
         <div class="nav-auth">
             <button id="notificationBell" class="notification-bell" title="Notifications" aria-label="Notifications">
                 <i class="fa fa-bell"></i>
@@ -24,25 +28,26 @@
                       th:text="${unreadNotificationCount ?: 0}">0</span>
             </button>
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
-            <div class="profile-menu" sec:authorize="isAuthenticated()">
-                <button class="profile-btn">
-                    <span class="profile-logo" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</span>
+            <div class="profile-menu" sec:authorize="isAuthenticated()"
+                 th:with="studentDetails=${#authentication.principal},
+                          student=${studentDetails.student}">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
+                    <span class="profile-logo" th:text="${student.firstName.substring(0,1)}">U</span>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown">
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
-                        <div class="profile-logo-large" th:text="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails) ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</div>
-                        <div th:if="${#authentication.principal instanceof T(com.example.FinalProject.model.StudentDetails)}">
+                        <div class="profile-logo-large" th:text="${student.firstName.substring(0,1)}">U</div>
+                        <div>
                             <div style="display:flex;flex-direction:column;align-items:center;">
-                                <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}" style="font-size:1.1em;"></strong>
-                                <span th:text="${#authentication.principal.student.email}" style="color:#888;font-size:0.95em;margin-top:2px;"></span>
+                                <strong th:text="${student.firstName + ' ' + student.lastName}" style="font-size:1.1em;">User Name</strong>
+                                <span th:text="${student.email}" style="color:#888;font-size:0.95em;margin-top:2px;">user@email.com</span>
                             </div>
                         </div>
                     </div>
                     <hr>
                     <a href="/userprofile" class="profile-link">Profile</a>
                     <a href="/student/notifications" class="profile-link">Notifications</a>
-                    <div style="height: 30px;"></div>
-                    <a href="/logout" class="profile-link logout" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">Logout</a>
+                    <a href="/logout" class="profile-link logout">Logout</a>
                 </div>
             </div>
         </div>
@@ -50,70 +55,71 @@
 </nav>
 <div id="notificationBar" class="notification-bar"></div>
 
-<!-- New content: two-column layout with right sidebar for Due and Reserved books -->
-<main class="page-container">
-    <section class="main-col">
-        <div class="welcome">
-            <h1>Welcome to the Librowse</h1>
-            <p>Explore books, borrow, and manage your reservations.</p>
-        </div>
-
-        <!-- Example main content placeholder (keep the page useful without backend data) -->
-        <div class="content-placeholder">
-            <p>Browse our collection or use the search bar above to find books.</p>
-        </div>
+<main class="page-container home-layout">
+    <section class="hero-col">
+        <h1 class="hero-title">Welcome to the Librowse</h1>
+        <p class="subtitle">Explore books, borrow, and manage your reservations.</p>
+        <p class="subtitle">Browse our collection or use the search bar above to find books.</p>
     </section>
 
-    <aside class="sidebar" aria-label="Your books">
-        <div class="sidebar-card">
-            <h2 class="sidebar-title">Due Books</h2>
-            <table class="book-table" role="table" aria-describedby="due-books-desc">
-                <caption id="due-books-desc" class="sr-only">List of your overdue or soon-to-be-due books</caption>
-                <thead>
+    <aside class="summary-sidebar">
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <h2>Due Books</h2>
+            </div>
+            <div class="summary-card-body">
+                <p th:if="${#lists.isEmpty(dueBooks)}">You have no books due soon.</p>
+                <table th:if="${!#lists.isEmpty(dueBooks)}" class="summary-table">
+                    <thead>
                     <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Due Date</th>
+                        <th>Title</th>
+                        <th>Due Date</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${dueBooks == null or #lists.isEmpty(dueBooks)}">
-                        <td colspan="2" class="empty">No due books</td>
+                    </thead>
+                    <tbody>
+                    <tr th:each="book : ${dueBooks}">
+                        <td class="book-title" th:text="${book.title}">Book Title</td>
+                        <td class="book-due" th:text="${book.dueDate}">Due Date</td>
                     </tr>
-                    <!-- Iterate BorrowRecord objects (br) -->
-                    <tr th:each="br : ${dueBooks}">
-                        <td data-label="Title" th:text="${br.book != null ? br.book.title : 'Unknown Title'}">Book Title</td>
-                        <td data-label="Due Date" th:text="${br.dueDate != null ? #temporals.format(br.dueDate, 'yyyy-MM-dd') : ''}">2025-10-23</td>
-                    </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="sidebar-card">
-            <h2 class="sidebar-title">Reserved Books</h2>
-            <table class="book-table" role="table" aria-describedby="reserved-books-desc">
-                <caption id="reserved-books-desc" class="sr-only">List of books you have reserved</caption>
-                <thead>
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <h2>Reserved Books</h2>
+            </div>
+            <div class="summary-card-body">
+                <p th:if="${#lists.isEmpty(reservedBooks)}">You have no reserved books.</p>
+                <table th:if="${!#lists.isEmpty(reservedBooks)}" class="summary-table">
+                    <thead>
                     <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Reserved On</th>
+                        <th>Title</th>
+                        <th>Reserved On</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${reservedBooks == null or #lists.isEmpty(reservedBooks)}">
-                        <td colspan="2" class="empty">No reserved books</td>
+                    </thead>
+                    <tbody>
+                    <tr th:each="book : ${reservedBooks}">
+                        <td class="book-title" th:text="${book.title}">Book Title</td>
+                        <td class="book-status" th:text="${book.status}">Reserved On</td>
                     </tr>
-                    <!-- Iterate Reservation objects (r) -->
-                    <tr th:each="r : ${reservedBooks}">
-                        <td data-label="Title" th:text="${r.book != null ? r.book.title : 'Book Title'}">Book Title</td>
-                        <td data-label="Reserved On" th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd') : ''}">2025-10-01</td>
-                    </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="quick-links">
+            <h2>Quick Links</h2>
+            <ul>
+                <li><a href="/book">Browse all books</a></li>
+                <li><a href="/student/notifications">View notifications</a></li>
+                <li><a href="/userprofile">Your profile</a></li>
+            </ul>
         </div>
     </aside>
 </main>
 
-<!-- existing scripts -->
 <script>
 const profileBtn = document.querySelector('.profile-btn');
 const profileDropdown = document.getElementById('profileDropdown');
@@ -126,13 +132,20 @@ if (profileBtn && profileDropdown) {
         dropdownOpen = !dropdownOpen;
         if (dropdownOpen) {
             profileDropdown.classList.add('show');
+            profileBtn.setAttribute('aria-expanded', 'true');
+            profileDropdown.setAttribute('aria-hidden', 'false');
         } else {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
         }
     });
+
     document.addEventListener('click', function(e) {
         if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
             profileDropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
+            profileDropdown.setAttribute('aria-hidden', 'true');
             dropdownOpen = false;
         }
     });
@@ -156,7 +169,8 @@ if (isAuthenticated) {
 
 function loadNotifications() {
     if (!isAuthenticated) return;
-    
+    if (!notificationCount) return;
+
     fetch('/api/student/notifications/count')
         .then(response => response.json())
         .then(data => {
@@ -175,39 +189,44 @@ function loadNotifications() {
         });
 }
 
-notificationBell.addEventListener('click', function() {
-    if (notifications.length > 0) {
-        // Show notifications in a more user-friendly way
-        const notificationMessages = notifications.map(n => n.message).join('\n\n');
-        alert('📬 Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
-        
-        // Mark notifications as read
-        fetch('/api/student/notifications/mark-read', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Clear notification count
-                notifications = [];
-                notificationCount.style.display = 'none';
-                notificationCount.textContent = '0';
-            }
-        })
-        .catch(error => {
-            console.error('Error marking notifications as read:', error);
-        });
-    } else {
-        // Suggest checking the notifications page
-        alert('🔔 No new notifications\n\nCheck your notifications page for older messages!');
-    }
-});
+if (notificationBell) {
+    notificationBell.addEventListener('click', function() {
+        if (notifications.length > 0) {
+            // Show notifications in a more user-friendly way
+            const notificationMessages = notifications.map(n => n.message).join('\n\n');
+            alert('\ud83d\udcec Your Notifications:\n\n' + notificationMessages + '\n\nClick on "Notifications" in your profile menu to view all notifications.');
+
+            // Mark notifications as read
+            fetch('/api/student/notifications/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Clear notification count
+                    notifications = [];
+                    if (notificationCount) {
+                        notificationCount.style.display = 'none';
+                        notificationCount.textContent = '0';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notifications as read:', error);
+            });
+        } else {
+            // Suggest checking the notifications page
+            alert('\ud83d\udd14 No new notifications\n\nCheck your notifications page for older messages!');
+        }
+    });
+}
 
 function showNotification(message, type = 'success') {
     const bar = document.getElementById('notificationBar');
+    if (!bar) return;
     bar.textContent = message;
     bar.className = 'notification-bar ' + type + ' show';
     bar.style.display = 'block';
@@ -221,6 +240,46 @@ function showNotification(message, type = 'success') {
         setTimeout(loadNotifications, 1000);
     }
 }
+
+// Mobile hamburger toggle behavior
+(function() {
+    const hamburger = document.getElementById('hamburgerBtn');
+    const navLinks = document.getElementById('navLinks');
+    if (!hamburger || !navLinks) return;
+
+    function closeMenu() {
+        navLinks.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('body-menu-open');
+    }
+
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = navLinks.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        document.body.classList.toggle('body-menu-open', isOpen);
+    });
+
+    // Close when clicking outside the menu
+    document.addEventListener('click', (e) => {
+        if (!navLinks.classList.contains('open')) return;
+        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    // Close on resize to larger screens
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 560) closeMenu();
+    });
+
+    // Close when a nav link is clicked (use event delegation)
+    navLinks.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        if (window.innerWidth <= 560) closeMenu();
+    });
+})();
 </script>
 </body>
 </html>
