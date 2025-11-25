@@ -54,14 +54,17 @@ public class MainController {
             model.addAttribute("unreadNotificationCount", unreadNotifications.size());
 
             // Fetch due books and reserved books for the current student and add to model
+          // java
             try {
                 Long studentId = userDetails.getStudent().getId();
                 List<BorrowRecord> dueBooks = borrowRecordRepository.findDueByStudentId(studentId);
-                List<Reservation> reservedBooks = reservationRepository.findActiveByStudentId(studentId);
+                List<Reservation> reservedBooks = reservationRepository.findByStudentIdAndStatusIn(
+                    studentId,
+                    java.util.List.of(Reservation.Status.pending, Reservation.Status.accepted)
+                );
                 model.addAttribute("dueBooks", dueBooks);
                 model.addAttribute("reservedBooks", reservedBooks);
             } catch (Exception e) {
-                // In case repository methods or IDs are not available, ensure attributes exist
                 model.addAttribute("dueBooks", List.of());
                 model.addAttribute("reservedBooks", List.of());
             }
