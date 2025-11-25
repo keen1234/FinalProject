@@ -1,11 +1,13 @@
 package com.example.FinalProject.controller;
 
+import com.example.FinalProject.dto.StudentProfileDto;
 import com.example.FinalProject.model.Student;
 import com.example.FinalProject.model.Course;
 import com.example.FinalProject.model.Notification;
 import com.example.FinalProject.repository.CourseRepository;
 import com.example.FinalProject.repository.StudentRepository;
 import com.example.FinalProject.repository.NotificationRepository;
+import com.example.FinalProject.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.WebDataBinder;
@@ -21,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +37,8 @@ import com.example.FinalProject.repository.BorrowRecordRepository;
 import com.example.FinalProject.repository.ReservationRepository;
 import com.example.FinalProject.model.BorrowRecord;
 import com.example.FinalProject.model.Reservation;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Controller
 public class StudentController {
@@ -48,6 +55,9 @@ public class StudentController {
     
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private StudentService studentService;
 
     // Autowire new repositories
     @Autowired
@@ -118,10 +128,93 @@ public class StudentController {
         }
         Object principal = authentication.getPrincipal();
         if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
-            Student student = userDetails.getStudent();
-            model.addAttribute("student", student);
+            // Load fresh student from repository to ensure view shows persisted changes
+            String email = userDetails.getUsername();
+            studentRepository.findByEmail(email).ifPresent(s -> model.addAttribute("student", s));
         }
         return "userprofile";
+    }
+
+    @GetMapping("/userprofile/edit")
+    public String editUserProfile(Authentication authentication, Model model) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+            Student student = userDetails.getStudent();
+            StudentProfileDto dto = new StudentProfileDto();
+            dto.setId(student.getId());
+            dto.setFirstName(student.getFirstName());
+            dto.setLastName(student.getLastName());
+            dto.setAddress(student.getAddress());
+            dto.setNumber(student.getNumber());
+            dto.setEmail(student.getEmail());
+            if (student.getCourse() != null) dto.setCourseCode(student.getCourse().getCourseCode());
+
+            model.addAttribute("profileDto", dto);
+            model.addAttribute("courses", courseRepository.findAll());
+            return "edit-userprofile";
+        }
+        return "redirect:/login";
+    }
+
+    @PostMapping("/userprofile/edit")
+    public String postEditUserProfile(Authentication authentication, @Valid @ModelAttribute("profileDto") StudentProfileDto profileDto, BindingResult br, Model model, jakarta.servlet.http.HttpSession session) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof com.example.FinalProject.model.StudentDetails userDetails)) {
+            return "redirect:/login";
+        }
+
+        Student current = userDetails.getStudent();
+
+        if (br.hasErrors()) {
+            model.addAttribute("courses", courseRepository.findAll());
+            return "edit-userprofile";
+        }
+
+        // ensure user cannot edit someone else's account
+        if (!current.getId().equals(profileDto.getId())) {
+            return "redirect:/userprofile?error=forbidden";
+        }
+
+        boolean credentialsChanged = false;
+        try {
+            // log incoming DTO for debugging
+            logger.info("Received profile update DTO for student id={}: firstName={}, lastName={}, email={}, courseCode={}", profileDto.getId(), profileDto.getFirstName(), profileDto.getLastName(), profileDto.getEmail(), profileDto.getCourseCode());
+
+            // check if email or password will change
+            if (!current.getEmail().equals(profileDto.getEmail())) credentialsChanged = true;
+            if (profileDto.getPassword() != null && !profileDto.getPassword().isBlank()) credentialsChanged = true;
+
+            // update and get the persisted student
+            Student updated = studentService.updateProfile(current.getId(), profileDto);
+            // if credentials not changed, update authentication principal so UI shows new data immediately
+            if (!credentialsChanged) {
+                com.example.FinalProject.model.StudentDetails newDetails = new com.example.FinalProject.model.StudentDetails(updated);
+                UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(newDetails, authentication.getCredentials(), authentication.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+                // redirect to profile page so user returns to their profile and sees the updated info
+                return "redirect:/userprofile?success";
+            }
+        } catch (IllegalArgumentException ex) {
+            br.reject("globalError", ex.getMessage());
+            model.addAttribute("courses", courseRepository.findAll());
+            return "edit-userprofile";
+        }
+
+        if (credentialsChanged) {
+            // invalidate session so user must re-login when credentials changed
+            try { session.invalidate(); } catch (Exception ignored) {}
+            return "redirect:/login?updated";
+        }
+
+        return "redirect:/userprofile?success";
     }
 
     @GetMapping("/")
@@ -253,5 +346,6 @@ public class StudentController {
         
         return ResponseEntity.ok(response);
     }
+
 
 }

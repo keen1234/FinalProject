@@ -1,20 +1,32 @@
+<!-- src/main/resources/templates/edit-profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>edit-book</title>
+    <title>Edit Profile</title>
     <link rel="stylesheet" href="/css/book.css">
 </head>
 <body>
-<h1 style="text-align: center;">Edit Book</h1>
-<form th:action="@{/admin/book/edit/{id}(id=${book.id})}" method="post">
-    <input type="text" name="title" th:value="${book.title}" required />
-    <input type="text" name="author" th:value="${book.author}" required />
-    <input type="text" name="genre" th:value="${book.genre}" />
-    <input type="date" name="datePublish" th:value="${book.datePublish}" />
-    <input type="text" name="language" th:value="${book.language}" placeholder="Language" required />
+<h1 style="text-align: center;">Edit Profile</h1>
+<form th:action="@{/profile/edit}" method="post" th:object="${user}">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <label>Username
+        <input type="text" th:field="*{username}" required />
+    </label>
+    <label>Email
+        <input type="email" th:field="*{email}" required />
+    </label>
+    <label>Display name
+        <input type="text" th:field="*{displayName}" />
+    </label>
+    <label>Birth date
+        <input type="date" th:field="*{birthDate}" th:value="${#dates.format(user.birthDate,'yyyy-MM-dd')}" />
+    </label>
+    <label>Bio
+        <textarea th:field="*{bio}"></textarea>
+    </label>
     <button type="submit">Save</button>
-    <button type="button" onclick="window.location.href='/admin/book'">Cancel</button>
+    <button type="button" onclick="window.location.href='/profile'">Cancel</button>
 </form>
 </body>
 </html>
