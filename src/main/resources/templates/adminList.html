@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin List</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar" aria-label="Main Navigation">
+    <div class="navbar-content">
+        <div class="nav-center">
+            <ul class="nav-links">
+                <li><a href="/admin-home" class="nav-link">Home</a></li>
+                <li><a href="/admin/book" class="nav-link">Book</a></li>
+                <li><a href="/admin/list" class="nav-link active">Admin List</a></li>
+            </ul>
+        </div>
+        <div class="nav-auth">
+            <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
+            <div class="profile-menu" sec:authorize="isAuthenticated()">
+                <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
+                    <span class="profile-logo" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</span>
+                </button>
+                <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
+                    <div class="profile-info">
+                        <div class="profile-logo-large admin-logo" th:text="${admin != null and admin.name != null && #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</div>
+                        <div class="profile-text-block" th:if="${admin != null}">
+                            <strong class="profile-name" th:text="${admin.name}">Admin Name</strong>
+                            <span class="profile-email" th:text="${admin.email}">adminkenth@gmail.com</span>
+                            <span class="admin-status" th:text="${admin != null and admin.status == 'online'} ? 'online' : 'offline'">online</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <a href="/logout" class="profile-link logout">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="container">
+    <div class="container-inner">
+            <!-- Show flash error if present -->
+            <div th:if="${error != null}" class="notification-bar error" th:text="${error}"></div>
+            <div class="table-container">
+                <h2>Admin Users <small th:if="${unreadNotificationCount != null}" style="font-weight:600;color:#6b7280;">(Unread: <span th:text="${unreadNotificationCount}">0</span>)</small></h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${admins == null or #lists.isEmpty(admins)}">
+                            <td colspan="4">No admins found.</td>
+                        </tr>
+                        <tr th:each="adm : ${admins}">
+                            <td th:text="${adm.name}">Admin Name</td>
+                            <td th:text="${adm.email}">admin@example.com</td>
+                            <td data-label="Status">
+                                <span class="status-badge" th:classappend="${adm.status == 'online'} ? ' on-time' : ' offline'" th:text="${adm.status == 'online'} ? 'ONLINE' : 'OFFLINE'"></span>
+                            </td>
+                            <td data-label="Actions">
+                                <div>
+                                    <form th:action="@{'/admin/list/delete/' + ${adm.id}}" method="post" th:if="${admin != null and admin.id != adm.id}" style="display:inline;">
+                                        <button type="submit" class="reservation-action-btn reject-btn" onclick="return confirm('Delete this admin? This cannot be undone.')">Delete</button>
+                                    </form>
+                                    <span th:if="${admin != null and admin.id == adm.id}" style="color:#6b7280; font-size:0.9rem;">(You)</span>
+                                </div>
+                            </td>
+                         </tr>
+                     </tbody>
+                 </table>
+             </div>
+
+            <div class="form-section">
+                <h2>Add New Admin</h2>
+                <form th:action="@{/admin/list/add}" method="post" class="add-admin-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="adminName">Name</label>
+                            <input id="adminName" type="text" name="name" placeholder="Name" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="adminEmail">Email</label>
+                            <input id="adminEmail" type="email" name="email" placeholder="admin@example.com" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="adminPassword">Password</label>
+                            <input id="adminPassword" type="password" name="password" placeholder="Password" required />
+                        </div>
+                         <!-- Status is set automatically to 'offline' on creation; removed from form -->
+                    </div>
+                    <div class="form-actions" style="margin-top:0.6rem;">
+                        <button type="submit" class="primary-btn">Add Admin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+<script>
+    const profileBtn = document.querySelector('.profile-btn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    let dropdownOpen = false;
+    if (profileBtn && profileDropdown) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownOpen = !dropdownOpen;
+            if (dropdownOpen) {
+                profileDropdown.classList.add('show');
+                profileBtn.setAttribute('aria-expanded', 'true');
+                profileDropdown.setAttribute('aria-hidden', 'false');
+            } else {
+                profileDropdown.classList.remove('show');
+                profileBtn.setAttribute('aria-expanded', 'false');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+            }
+        });
+        document.addEventListener('click', function(e) {
+            if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+                profileBtn.setAttribute('aria-expanded', 'false');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+                dropdownOpen = false;
+            }
+        });
+    }
+</script>
+
+<!-- Clear Add Admin form inputs on page load to ensure they are empty -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addAdminForm = document.querySelector('.add-admin-form');
+    if (addAdminForm) {
+        // Reset the form so inputs are empty when the page loads.
+        try { addAdminForm.reset(); } catch (e) { /* ignore */ }
+    }
+});
+</script>
+
+</body>
+</html>

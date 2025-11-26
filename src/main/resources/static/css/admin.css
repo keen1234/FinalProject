@@ -35,3 +35,531 @@
 .profile-dropdown .profile-info {
     gap: 0.65rem;
 }
+
+/* Profile dropdown card styling (matches the provided design) */
+.profile-menu { position: relative; }
+.profile-dropdown {
+    position: absolute;
+    right: 0; /* match main.css positioning */
+    top: calc(100% + 0.5rem);
+    width: 260px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem 1.8rem;
+    box-shadow: 0 18px 45px rgba(15,23,42,0.25);
+    min-width: 260px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms;
+    border: 1px solid rgba(0,0,0,0.03);
+    z-index: 1160;
+    color: #111827;
+}
+.profile-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.profile-dropdown .profile-info { display:flex; flex-direction:column; align-items:center; gap:12px; padding-bottom:6px; }
+.profile-logo-large.admin-logo {
+    width:56px; height:56px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; font-size:1.4rem; color:#fff; background:linear-gradient(135deg,#3b82f6,#1d4ed8); box-shadow:0 4px 10px rgba(16,24,40,0.08);
+    margin-top: -38px; /* lift avatar to overlap top of card */
+}
+.profile-text-block { text-align:center; width:100%; }
+.profile-name { display:block; font-weight:700; color:#111827; margin-bottom:4px; text-transform:none; font-size:1rem; }
+.profile-email { display:block; color:#6b7280; font-size:0.9rem; margin-bottom:8px; }
+.admin-status { color:#16a34a; font-weight:600; font-size:0.95rem; }
+.profile-dropdown hr { border: none; border-top: 1px solid #eef2f2; margin: 10px 0; }
+.profile-link.logout {
+    display:block; width:100%; text-align:center; padding:12px 16px; border-radius:8px; background:#fde8e8; color:#ef4444; font-weight:700; text-decoration:none; border:1px solid rgba(239,68,68,0.06); margin-top:8px;
+}
+.profile-link.logout:hover { filter:brightness(0.98); }
+
+/* Small navbar profile button (round blue with initial) */
+.profile-btn {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    padding:0;
+    border-radius:999px;
+    border: none;
+    background: linear-gradient(180deg,#2b8eff,#1e6ef7);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(2,6,23,0.2);
+}
+.profile-btn .profile-logo {
+    display:inline-block;
+    width:100%; height:100%; border-radius:999px; text-align:center; line-height:36px; color:#fff; font-weight:700; text-transform:lowercase;
+}
+.profile-btn:focus { outline: 2px solid rgba(59,130,246,0.25); }
+
+/* Admin page layout and container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.container-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Table container styling */
+.table-container {
+    background: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(16,24,40,0.03);
+    overflow-x: auto;
+}
+
+.table-container h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.table-container thead th {
+    text-align: left;
+    padding: 0.65rem 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+    font-weight: 600;
+}
+
+.table-container tbody td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.table-container tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.reservation-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.reservation-action-btn i {
+    font-size: 0.9rem;
+}
+
+.accept-btn {
+    background: #10b981; /* emerald */
+    color: #ffffff;
+}
+
+.reject-btn {
+    background: #ef4444; /* red */
+    color: #ffffff;
+}
+
+.borrow-btn {
+    background: #2563eb; /* blue */
+    color: #ffffff;
+}
+
+.reservation-action-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Return button for Accepted Reservations */
+.return-btn {
+    background: #6c757d; /* muted gray */
+    color: #fff;
+    border: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.return-btn:hover { filter: brightness(0.95); }
+
+/* Forms and inputs */
+.form-section {
+    background: #ffffff;
+    border: 1px solid #e6e6e6;
+    padding: 0.9rem;
+    border-radius: 8px;
+}
+
+.form-section h2 {
+    margin-top: 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.6rem;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group textarea,
+.search-input {
+    padding: 0.5rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    font-size: 0.95rem;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+button[type="submit"], .search-btn, .clear-btn {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: none;
+    background: #111827;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.clear-btn {
+    background: transparent;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Compact search pair layout used on admin-book page */
+.search-pairs {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex: 1 1 auto;
+}
+
+.search-pair {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.search-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.search-input.book-search {
+    max-width: 420px;
+}
+
+/* Make the search button vertically aligned and not stretch */
+.search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.46rem 0.7rem;
+}
+
+@media (max-width: 680px) {
+    .search-pairs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-btn {
+        width: 100%;
+    }
+}
+
+/* Small card for student search results */
+.student-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    border: 1px solid #eef2ff;
+    background: #fbfbff;
+    padding: 0.6rem;
+    border-radius: 8px;
+}
+
+.student-info h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.student-books ul {
+    margin: 0.25rem 0 0 0;
+    padding-left: 1.1rem;
+}
+
+/* Notification bars */
+.notification-bar {
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    display: block; /* allow messages inserted by Thymeleaf to show */
+    margin-bottom: 0.6rem;
+}
+
+.notification-bar.success {
+    background: #ecfccb;
+    color: #14532d;
+    border: 1px solid #bbf7d0;
+}
+
+.notification-bar.error {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+}
+
+/* Utility: visually-hidden for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Layout for Add New Book form - two column grid */
+.add-book-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+    align-items: start;
+}
+
+/* Make description span the full height of the right column */
+.add-book-form .description-group {
+    grid-column: 2 / 3;
+    min-height: 100%;
+}
+
+/* Primary button style used in the add-book form */
+.primary-btn {
+    display: inline-block;
+    width: 100%;
+    max-width: 420px;
+    background: #0f172a; /* nearly black */
+    color: #fff;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 700;
+    text-align: center;
+}
+
+.form-actions {
+    margin-top: 0.65rem;
+}
+
+/* Ensure inputs inside grid use full width */
+.add-book-form .form-group input,
+.add-book-form .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Narrow, centered Add New Book form to match reference image */
+.add-book-form {
+    max-width: 520px; /* make the form panel smaller */
+    margin: 0.6rem auto; /* center horizontally with some vertical spacing */
+    padding: 0.8rem 0.9rem 0.9rem 0.9rem;
+    box-sizing: border-box;
+}
+
+/* Make the input 'boxes' visually larger like the reference screenshot */
+.add-book-form .form-group input[type="text"],
+.add-book-form .form-group input[type="date"] {
+    height: 120px;
+    padding: 0.6rem 0.6rem;
+}
+
+.add-book-form .form-group textarea {
+    min-height: 92px;
+    padding: 0.6rem;
+}
+
+/* Put the Add Book button centered and full-width on smaller screens, but keep moderate width on larger screens */
+.add-book-form .form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.9rem;
+}
+
+.add-book-form .primary-btn {
+    width: 100%;
+    max-width: 360px;
+    padding: 0.6rem 1rem;
+}
+
+/* Ensure date input shows its calendar icon without layout shifting */
+.add-book-form input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 1;
+}
+
+/* On very small screens make inputs shorter so layout isn't awkward */
+@media (max-width: 480px) {
+    .add-book-form .form-group input[type="text"],
+    .add-book-form .form-group input[type="date"] {
+        height: 72px;
+    }
+    .add-book-form .form-group textarea { min-height: 72px; }
+}
+
+/* Responsive: stack grid on small screens */
+@media (max-width: 680px) {
+    .add-book-form .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .add-book-form .description-group { grid-column: auto; }
+    .primary-btn { max-width: 100%; }
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+    .table-container thead {
+        display: none;
+    }
+    .table-container table,
+    .table-container tbody,
+    .table-container tr,
+    .table-container td {
+        display: block;
+        width: 100%;
+    }
+    .table-container tr { margin-bottom: 0.75rem; }
+    .table-container td { text-align: right; padding-left: 50%; position: relative; }
+    .table-container td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.75rem;
+        width: 45%;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+    }
+}
+
+/* Borrowed books table specific styles */
+.borrowed-table thead th {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.borrowed-table tbody td {
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Compact the table on desktop while keeping readable spacing */
+.borrowed-table {
+    font-size: 0.95rem;
+}
+
+/* Status badge styles */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #fff;
+    text-transform: uppercase;
+}
+.status-badge.overdue { background: #dc3545; }       /* red */
+.status-badge.due-soon { background: #d97706; }     /* amber */
+.status-badge.on-time { background: #16a34a; }      /* green */
+/* Offline admin badge */
+.status-badge.offline { background: #6b7280; }    /* gray */
+
+/* Borrow action layout */
+.borrow-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.borrow-actions form { margin: 0; }
+
+.borrow-actions .reservation-action-btn {
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* Smaller icon-only button appearance */
+.borrow-actions .reservation-action-btn i { margin: 0; }
+
+/* Extend form date input should be compact */
+.extend-form input[type="date"] {
+    padding: 0.28rem 0.4rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+    margin-right: 0.25rem;
+}
+
+.extend-btn { background: #f59e0b; color: #fff; }
+
+/* Accessibility helper (mirror sr-only) */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Slightly reduce overall vertical density for admin tables */
+.table-container tbody td { padding-top: 0.45rem; padding-bottom: 0.45rem; }
+
+/* Style for date input used in Accepted Reservations */
+.due-date-input {
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+    width: 160px;
+}
+
+/* End of admin.css additions */

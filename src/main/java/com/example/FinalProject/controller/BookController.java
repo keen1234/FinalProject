@@ -92,23 +92,38 @@ public class BookController {
     @GetMapping("/admin/book")
     public String showBooks(
             @RequestParam(value = "studentSearch", required = false) String studentSearch,
+            @RequestParam(value = "bookSearch", required = false) String bookSearch,
             Model model, Authentication authentication) {
-        List<Book> books = bookRepository.findAll();
-        System.out.println("Books fetched: " + books.size());
-        for (Book b : books) {
-            System.out.println("Book: " + b.getTitle() + ", Author: " + b.getAuthor());
+        // If bookSearch is provided, show only available books matching title or author.
+        List<Book> books;
+        if (bookSearch != null && !bookSearch.trim().isEmpty()) {
+            String q = bookSearch.trim().toLowerCase();
+            books = bookRepository.findAll().stream()
+                .filter(b -> b != null && b.getStatus() == Book.Status.available)
+                .filter(b -> (b.getTitle() != null && b.getTitle().toLowerCase().contains(q))
+                          || (b.getAuthor() != null && b.getAuthor().toLowerCase().contains(q)))
+                .collect(Collectors.toList());
+        } else {
+            books = bookRepository.findAll();
         }
-        model.addAttribute("books", books);
-        model.addAttribute("editBook", null);
-        
+         System.out.println("Books fetched: " + books.size());
+         for (Book b : books) {
+             System.out.println("Book: " + b.getTitle() + ", Author: " + b.getAuthor());
+         }
+         model.addAttribute("books", books);
+         // Preserve the bookSearch value in the model so the template can show it in the input
+         model.addAttribute("bookSearch", bookSearch);
+         model.addAttribute("editBook", null);
+
         // Get pending reservations
         List<Reservation> pendingReservations = reservationRepository.findByStatus(Reservation.Status.pending);
         model.addAttribute("pendingReservations", pendingReservations);
         
         // Get accepted reservations (ready to be borrowed) - only those where book is still reserved
+        // Include all accepted reservations so admins can still see them even if the book was returned to available
         List<Reservation> allAcceptedReservations = reservationRepository.findByStatus(Reservation.Status.accepted);
         List<Reservation> acceptedReservations = allAcceptedReservations.stream()
-            .filter(reservation -> reservation.getBook() != null && reservation.getBook().getStatus() == Book.Status.reserved)
+            .filter(reservation -> reservation.getBook() != null)
             .collect(Collectors.toList());
         model.addAttribute("acceptedReservations", acceptedReservations);
         
@@ -363,42 +378,87 @@ public class BookController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/reservation/reject/{id}")
-    public String rejectReservation(@PathVariable Long id) {
+    public String rejectReservation(@PathVariable Long id, @RequestParam(value = "notifyMessage", required = false) String notifyMessage) {
         Reservation reservation = reservationRepository.findById(id).orElse(null);
-        if (reservation != null && reservation.getStatus() == Reservation.Status.pending) {
+        if (reservation == null) {
+            return "redirect:/admin/book";
+        }
+
+        Book book = reservation.getBook();
+        Student student = reservation.getStudent();
+
+        // If the reservation is pending -> standard reject flow (mark rejected)
+        if (reservation.getStatus() == Reservation.Status.pending) {
             reservation.setStatus(Reservation.Status.rejected);
             reservationRepository.save(reservation);
-            
-            Book book = reservation.getBook();
-            Student student = reservation.getStudent();
-            
-            // Clean up the reservation relationships
+
             if (student != null && book != null) {
                 final Student finalStudent = student;
                 // Remove book from student's reserved books
                 student.getReservedBooks().removeIf(b -> b.getId().equals(book.getId()));
                 // Remove student from book's reservers
                 book.getReservers().removeIf(s -> s.getId().equals(finalStudent.getId()));
-                
+
                 // Check if there are other pending reservations for this book
                 List<Reservation> otherPendingReservations = reservationRepository.findByBookIdAndStatus(book.getId(), Reservation.Status.pending);
                 if (otherPendingReservations.isEmpty()) {
                     // No other pending reservations, make book available again
                     book.setStatus(Book.Status.available);
                 }
-                
+
                 studentRepository.save(student);
                 bookRepository.save(book);
-                
-                // Send rejection notification to student
+
+                // Send rejection notification to student (use provided message if given)
                 Notification notification = new Notification();
                 notification.setStudent(student);
-                notification.setMessage("Your reservation for '" + book.getTitle() + "' was rejected. The book is now available for other reservations.");
+                notification.setMessage(notifyMessage != null && !notifyMessage.trim().isEmpty()
+                    ? notifyMessage
+                    : "Your reservation for '" + book.getTitle() + "' was rejected. The book is now available for other reservations.");
                 notificationRepository.save(notification);
-                
+
                 System.out.println("Reservation for book '" + book.getTitle() + "' by student '" + student.getFirstName() + " " + student.getLastName() + "' was rejected and notification sent.");
             }
+
+            return "redirect:/admin/book";
         }
+
+        // If the reservation is accepted -> this is the 'Return to Available' flow triggered by admin
+        if (reservation.getStatus() == Reservation.Status.accepted) {
+            // Treat this as a rejection/return action: mark reservation rejected and make book available
+            reservation.setStatus(Reservation.Status.rejected);
+            reservationRepository.save(reservation);
+
+            if (book != null) {
+                // Make book available
+                book.setStatus(Book.Status.available);
+
+                // Remove this student from the book's reservers and remove book from student's reserved books
+                if (student != null) {
+                    final Student finalStudent = student;
+                    student.getReservedBooks().removeIf(b -> b.getId().equals(book.getId()));
+                    book.getReservers().removeIf(s -> s.getId().equals(finalStudent.getId()));
+                    studentRepository.save(student);
+                }
+
+                bookRepository.save(book);
+            }
+
+            // Send notification to student that their reservation was rejected by admin
+            if (student != null) {
+                Notification notification = new Notification();
+                notification.setStudent(student);
+                notification.setMessage(notifyMessage != null && !notifyMessage.trim().isEmpty()
+                    ? notifyMessage
+                    : "Your reservation for '" + (book != null ? book.getTitle() : "the book") + "' was rejected by the admin. The book is now available.");
+                notificationRepository.save(notification);
+            }
+
+
+            return "redirect:/admin/book";
+        }
+
+        // For other statuses, do nothing
         return "redirect:/admin/book";
     }
     

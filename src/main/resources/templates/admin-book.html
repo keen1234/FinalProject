@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +16,7 @@
             <ul class="nav-links">
                 <li><a href="/admin-home" class="nav-link">Home</a></li>
                 <li><a href="/admin/book" class="nav-link active">Book</a></li>
+                <li><a href="/admin/list" class="nav-link">AdminList</a></li>
             </ul>
         </div>
         <div class="nav-auth">
@@ -43,14 +44,6 @@
 <div style="height: 1.5rem;"></div>
 
 <script>
-function acceptReservation(reservationId) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/admin/reservation/accept/' + reservationId;
-    document.body.appendChild(form);
-    form.submit();
-}
-
 function borrowReservedBook(reservationId) {
     const dueDateInput = document.getElementById('dueDate-' + reservationId);
     const dueDate = dueDateInput.value;
@@ -75,481 +68,472 @@ function borrowReservedBook(reservationId) {
     
     form.submit();
 }
+
+// Expose for inline handlers and to satisfy static analyzers
+window.borrowReservedBook = borrowReservedBook;
 </script>
 <main class="main-content" sec:authorize="hasRole('ADMIN')">
-    <div class="container">
-        <div class="container-inner">
-            <div id="notificationBar" class="notification-bar" style="display:none;"></div>
-            <div id="persistentNotificationBar" class="notification-bar" style="display:none; position:static; margin-bottom:1rem;"></div>
+     <div class="container">
+         <div class="container-inner">
+             <div id="notificationBar" class="notification-bar" style="display:none;"></div>
+             <div id="persistentNotificationBar" class="notification-bar" style="display:none; position:static; margin-bottom:1rem;"></div>
 
-            <!-- Search Results -->
-            <div th:if="${searchResults != null and #lists.size(searchResults) > 0}" class="table-container">
-                <h2>Search Results for: "<span th:text="${studentSearch}"></span>" (<span th:text="${#lists.size(searchResults)}"></span> found)</h2>
-                <div th:each="student : ${searchResults}" class="student-card">
-                    <div class="student-info">
-                        <h3 th:text="${student.firstName + ' ' + student.lastName}"></h3>
-                        <p><strong>ID:</strong> <span th:text="${student.id}"></span></p>
-                        <p><strong>Email:</strong> <span th:text="${student.email}"></span></p>
-                        <p><strong>Course:</strong> <span th:text="${student.course != null ? student.course.courseCode : 'N/A'}"></span></p>
+             <!-- Search Results -->
+             <div th:if="${searchResults != null and #lists.size(searchResults) > 0}" class="table-container">
+                 <h2>Search Results for: "<span th:text="${studentSearch}"></span>" (<span th:text="${#lists.size(searchResults)}"></span> found)</h2>
+                 <div th:each="student : ${searchResults}" class="student-card">
+                     <div class="student-info">
+                         <h3 th:text="${student.firstName + ' ' + student.lastName}"></h3>
+                         <p><strong>ID:</strong> <span th:text="${student.id}"></span></p>
+                         <p><strong>Email:</strong> <span th:text="${student.email}"></span></p>
+                         <p><strong>Course:</strong> <span th:text="${student.course != null ? student.course.courseCode : 'N/A'}"></span></p>
+                     </div>
+
+                     <div class="student-books">
+                         <div class="borrowed-books" th:if="${student.borrowedBooks != null and #lists.size(student.borrowedBooks) > 0}">
+                             <h4>📚 Currently Borrowed Books (<span th:text="${#lists.size(student.borrowedBooks)}"></span>)</h4>
+                             <ul>
+                                 <li th:each="book : ${student.borrowedBooks}" th:text="${book.title + ' by ' + book.author}"></li>
+                             </ul>
+                         </div>
+
+                         <div class="reserved-books" th:if="${student.reservedBooks != null and #lists.size(student.reservedBooks) > 0}">
+                             <h4>📋 Reserved Books (<span th:text="${#lists.size(student.reservedBooks)}"></span>)</h4>
+                             <ul>
+                                 <li th:each="book : ${student.reservedBooks}" th:text="${book.title + ' by ' + book.author}"></li>
+                             </ul>
+                         </div>
+
+                         <div th:if="${(student.borrowedBooks == null or #lists.size(student.borrowedBooks) == 0) and (student.reservedBooks == null or #lists.size(student.reservedBooks) == 0)}">
+                             <p class="no-books">No books currently borrowed or reserved.</p>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+
+             <!-- No Search Results -->
+             <div th:if="${searchResults != null and #lists.size(searchResults) == 0 and studentSearch != null and !#strings.isEmpty(studentSearch)}" class="no-results">
+                 <h2>No Results Found</h2>
+                 <p>No students found matching "<span th:text="${studentSearch}"></span>"</p>
+                 <p>Try searching with a different name or check the spelling.</p>
+             </div>
+
+             <!-- Add New Book Form -->
+             <div class="form-section">
+                 <h2>Add New Book</h2>
+                 <form th:action="@{/admin/book/add}" method="post" class="add-book-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="newTitle">Title</label>
+                            <input id="newTitle" type="text" name="title" placeholder="Title" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="newAuthor">Author</label>
+                            <input id="newAuthor" type="text" name="author" placeholder="Author" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="newGenre">Genre</label>
+                            <input id="newGenre" type="text" name="genre" placeholder="Genre" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="newDatePublish">Published Date</label>
+                            <input id="newDatePublish" type="date" name="datePublish" placeholder="Published Date" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="newLanguage">Language</label>
+                            <input id="newLanguage" type="text" name="language" placeholder="Language" required />
+                        </div>
+                        <div class="form-group description-group">
+                            <label for="newDescription">Description</label>
+                            <textarea id="newDescription" name="description" placeholder="Description"></textarea>
+                        </div>
                     </div>
+                     <div class="form-actions">
+                         <button type="submit" class="primary-btn">Add Book</button>
+                     </div>
+                 </form>
+             </div>
 
-                    <div class="student-books">
-                        <div class="borrowed-books" th:if="${student.borrowedBooks != null and #lists.size(student.borrowedBooks) > 0}">
-                            <h4>📚 Currently Borrowed Books (<span th:text="${#lists.size(student.borrowedBooks)}"></span>)</h4>
-                            <ul>
-                                <li th:each="book : ${student.borrowedBooks}" th:text="${book.title + ' by ' + book.author}"></li>
-                            </ul>
-                        </div>
-
-                        <div class="reserved-books" th:if="${student.reservedBooks != null and #lists.size(student.reservedBooks) > 0}">
-                            <h4>📋 Reserved Books (<span th:text="${#lists.size(student.reservedBooks)}"></span>)</h4>
-                            <ul>
-                                <li th:each="book : ${student.reservedBooks}" th:text="${book.title + ' by ' + book.author}"></li>
-                            </ul>
-                        </div>
-
-                        <div th:if="${(student.borrowedBooks == null or #lists.size(student.borrowedBooks) == 0) and (student.reservedBooks == null or #lists.size(student.reservedBooks) == 0)}">
-                            <p class="no-books">No books currently borrowed or reserved.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- No Search Results -->
-            <div th:if="${searchResults != null and #lists.size(searchResults) == 0 and studentSearch != null and !#strings.isEmpty(studentSearch)}" class="no-results">
-                <h2>No Results Found</h2>
-                <p>No students found matching "<span th:text="${studentSearch}"></span>"</p>
-                <p>Try searching with a different name or check the spelling.</p>
-            </div>
-
-            <!-- Pending Reservations Notification -->
-            <div th:if="${pendingReservations != null and #lists.size(pendingReservations) > 0}" class="pending-reservations">
-                <h2>Pending Reservations</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Book</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="reservation : ${pendingReservations}">
-                                <td th:text="${reservation.student != null ? reservation.student.firstName + ' ' + reservation.student.lastName : 'Unknown'}"></td>
-                                <td th:text="${reservation.book.title}"></td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <form th:action="@{'/admin/reservation/accept/' + ${reservation.id}}" method="post" style="display:inline; margin-right: 5px;">
-                                            <button type="submit" class="reservation-action-btn accept-btn">
-                                                <i class="fa fa-check"></i> Accept
-                                            </button>
-                                        </form>
-                                        <form th:action="@{'/admin/reservation/reject/' + ${reservation.id}}" method="post" style="display:inline;">
-                                            <button type="submit" class="reservation-action-btn reject-btn"
-                                                    onclick="return confirm('Are you sure you want to reject this reservation?')">
-                                                <i class="fa fa-times"></i> Reject
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Accepted Reservations (Ready to Borrow) -->
-            <div th:if="${acceptedReservations != null and #lists.size(acceptedReservations) > 0}" class="accepted-reservations">
-                <h2>Accepted Reservations (Ready to Borrow) (<span th:text="${#lists.size(acceptedReservations)}"></span>)</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Book</th>
-                                <th>Due Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="reservation : ${acceptedReservations}">
-                                <td th:text="${reservation.student != null ? reservation.student.firstName + ' ' + reservation.student.lastName : 'Unknown'}"></td>
-                                <td th:text="${reservation.book.title}"></td>
-                                <td>
-                                    <input type="date" name="dueDate" th:id="'dueDate-' + ${reservation.id}" required class="due-date-input"
-                                           th:value="${T(java.time.LocalDate).now().plusDays(14)}"/>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button type="button" class="reservation-action-btn borrow-btn"
-                                                th:onclick="'borrowReservedBook(' + ${reservation.id} + ')'">
-                                            <i class="fa fa-book"></i> Borrow
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <h1>Book Management</h1>
-
-            <!-- Add New Book Form -->
-            <div class="form-section">
-                <h2>Add New Book</h2>
-                <form th:action="@{/admin/book/add}" method="post">
-                    <input type="text" name="title" placeholder="Title" required />
-                    <input type="text" name="author" placeholder="Author" required />
-                    <input type="text" name="genre" placeholder="Genre" required />
-                    <input type="date" name="datePublish" placeholder="Published Date" required />
-                    <input type="text" name="language" placeholder="Language" required />
-                    <textarea name="description" placeholder="Description"></textarea>
-                    <button type="submit">Add Book</button>
-                </form>
-            </div>
-
-            <!-- Student Search (moved below Add New Book) -->
-            <div class="form-section">
-                <h2>Search Students</h2>
+             <!-- Student Search (moved below Add New Book) -->
+             <div class="form-section">
+                 <h2>Search Students</h2>
                 <form method="get" action="/admin/book" class="search-form">
-                    <input type="text" name="studentSearch" placeholder="Search by student name..."
-                           th:value="${studentSearch}" class="search-input"/>
-                    <button type="submit" class="search-btn" aria-label="Search students">
+                    <div class="search-pairs">
+                        <div class="search-pair">
+                            <label for="studentSearchInput" class="sr-only">Search by student name</label>
+                            <input id="studentSearchInput" type="text" name="studentSearch" placeholder="Search students..."
+                                   th:value="${studentSearch}" class="search-input" />
+                        </div>
+                        <div class="search-pair">
+                            <label for="bookSearchInput" class="sr-only">Search available books</label>
+                            <input id="bookSearchInput" type="text" name="bookSearch" placeholder="Search available books..."
+                                   th:value="${bookSearch}" class="search-input book-search" />
+                        </div>
+                    </div>
+                    <button type="submit" class="search-btn" aria-label="Search">
                         <i class="fa fa-search"></i>
                     </button>
                     <a href="/admin/book" class="clear-btn">Clear</a>
                 </form>
-            </div>
+             </div>
 
-            <!-- Edit Book Form -->
-            <div class="form-section" th:if="${editBook != null}">
-                <h2>Edit Book</h2>
-                <form th:action="@{'/admin/book/edit/' + ${editBook.id}}" method="post">
-                    <input type="hidden" name="id" th:value="${editBook.id}" />
-                    <input type="text" name="title" th:value="${editBook.title}" placeholder="Title" required />
-                    <input type="text" name="author" th:value="${editBook.author}" placeholder="Author" required />
-                    <input type="text" name="genre" th:value="${editBook.genre}" placeholder="Genre" required />
-                    <input type="date" name="datePublish" th:value="${#dates.format(editBook.datePublish, 'yyyy-MM-dd')}" placeholder="Published Date" required />
-                    <input type="text" name="language" th:value="${editBook.language}" placeholder="Language" required />
-                    <input type="text" name="country" th:value="${editBook.country}" placeholder="Country" required />
-                    <input type="text" name="time" th:value="${editBook.time}" placeholder="Time" required />
-                    <textarea name="description" th:text="${editBook.description}" placeholder="Description"></textarea>
-                    <input type="hidden" name="status" th:value="${editBook.status}" />
-                    <button type="submit">Save Changes</button>
-                    <a href="/admin/book">Cancel</a>
-                </form>
-            </div>
+             <!-- Edit Book Form -->
+             <div class="form-section" th:if="${editBook != null}">
+                 <h2>Edit Book</h2>
+                 <form th:action="@{'/admin/book/edit/' + ${editBook.id}}" method="post">
+                     <input type="hidden" name="id" th:value="${editBook.id}" />
+                    <div class="form-group">
+                        <label for="editTitle">Title</label>
+                        <input id="editTitle" type="text" name="title" th:value="${editBook.title}" placeholder="Title" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editAuthor">Author</label>
+                        <input id="editAuthor" type="text" name="author" th:value="${editBook.author}" placeholder="Author" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editGenre">Genre</label>
+                        <input id="editGenre" type="text" name="genre" th:value="${editBook.genre}" placeholder="Genre" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editDatePublish">Published Date</label>
+                        <input id="editDatePublish" type="date" name="datePublish" th:value="${#dates.format(editBook.datePublish, 'yyyy-MM-dd')}" placeholder="Published Date" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editLanguage">Language</label>
+                        <input id="editLanguage" type="text" name="language" th:value="${editBook.language}" placeholder="Language" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editCountry">Country</label>
+                        <input id="editCountry" type="text" name="country" th:value="${editBook.country}" placeholder="Country" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editTime">Time</label>
+                        <input id="editTime" type="text" name="time" th:value="${editBook.time}" placeholder="Time" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescription">Description</label>
+                        <textarea id="editDescription" name="description" th:text="${editBook.description}" placeholder="Description"></textarea>
+                    </div>
+                     <input type="hidden" name="status" th:value="${editBook.status}" />
+                     <button type="submit">Save Changes</button>
+                     <a href="/admin/book">Cancel</a>
+                 </form>
+             </div>
 
-            <!-- Book List Table -->
-            <div class="table-container">
-                <h2>All Books</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Author</th>
-                            <th>Genre</th>
-                            <th>Published Date</th>
-                            <th>Language</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="book : ${books}">
-                            <td th:text="${book.title}"></td>
-                            <td th:text="${book.author}"></td>
-                            <td th:text="${book.genre}"></td>
-                            <td th:text="${book.datePublish}"></td>
-                            <td th:text="${book.language}"></td>
-                            <td th:text="${book.status}"></td>
-                            <td>
+             <!-- Book List Table -->
+             <div class="table-container">
+                 <h2>All Books</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Title</th>
+                             <th>Author</th>
+                             <th>Genre</th>
+                             <th>Published Date</th>
+                             <th>Language</th>
+                             <th>Status</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="book : ${books}">
+                            <td data-label="Title" th:text="${book.title}"></td>
+                            <td data-label="Author" th:text="${book.author}"></td>
+                            <td data-label="Genre" th:text="${book.genre}"></td>
+                            <td data-label="Published Date" th:text="${book.datePublish}"></td>
+                            <td data-label="Language" th:text="${book.language}"></td>
+                            <td data-label="Status" th:text="${book.status}"></td>
+                            <td data-label="Actions">
                                 <a th:href="@{'/admin/book/edit/' + ${book.id}}">Edit</a> |
-                                <a th:href="@{'/admin/book/delete/' + ${book.id}}" onclick="return confirm('Are you sure?')">Delete</a>
+                               <a th:href="@{'/admin/book/delete/' + ${book.id}}" onclick="return confirm('Are you sure?')">Delete</a>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
+                     </tbody>
+                 </table>
+             </div>
 
-            <!-- Notifications Section -->
-            <div class="table-container" th:if="${notifications != null and #lists.size(notifications) > 0}">
-                <h2>Notifications</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Message</th>
-                            <th>Student</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="notification : ${notifications}">
-                            <td th:text="${notification.message}"></td>
-                            <td th:text="${notification.student != null ? notification.student.firstName + ' ' + notification.student.lastName : 'Unknown'}"></td>
-                            <td th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+             <!-- Accepted Reservations (placed above All Borrowed Books) -->
+             <div th:if="${acceptedReservations != null and #lists.size(acceptedReservations) > 0}" class="table-container">
+                 <h2>Accepted Reservations</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Student</th>
+                             <th>Book</th>
+                             <th>Due Date</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="reservation : ${acceptedReservations}">
+                             <td data-label="Student" th:text="${reservation.student != null ? reservation.student.firstName + ' ' + reservation.student.lastName : 'Unknown'}"></td>
+                             <td data-label="Book" th:text="${reservation.book.title}"></td>
+                             <td data-label="Due Date">
+                                <label th:for="${'dueDate-' + reservation.id}" class="sr-only">Due Date</label>
+                                <input type="date" th:id="'dueDate-' + ${reservation.id}" class="due-date-input" th:value="${T(java.time.LocalDate).now().plusDays(14)}" aria-label="Due date for reservation" />
+                            </td>
+                             <td data-label="Actions">
+                               <div class="action-buttons">
+                                   <button type="button" class="reservation-action-btn borrow-btn" th:onclick="'borrowReservedBook(' + ${reservation.id} + ')'">
+                                       <i class="fa fa-book"></i> Borrow
+                                   </button>
+                                   <form th:action="@{'/admin/reservation/reject/' + ${reservation.id}}" method="post" style="display:inline;">
+                                       <!-- Notify the user that their reservation was rejected and return book to available -->
+                                       <input type="hidden" name="notifyMessage" value="The book you requested has been rejected by the admin." />
+                                       <button type="submit" class="reservation-action-btn return-btn" onclick="return confirm('Return book to available and notify user?')">
+                                           <i class="fa fa-undo"></i> Return to Available
+                                       </button>
+                                   </form>
+                               </div>
+                            </td>
+                         </tr>
+                     </tbody>
+                 </table>
+             </div>
 
-            <!-- Overdue Books Alert -->
-            <div th:if="${overdueBooks != null and #lists.size(overdueBooks) > 0}" class="table-container" style="border: 2px solid #dc3545; background-color: #f8d7da;">
-                <h2 style="color: #721c24;">⚠️ Overdue Books</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Book Title</th>
-                            <th>Borrower</th>
-                            <th>Due Date</th>
-                            <th>Days Overdue</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="borrowRecord : ${overdueBooks}">
-                            <td th:text="${borrowRecord.book.title}"></td>
-                            <td th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
-                            <td th:text="${borrowRecord.dueDate}"></td>
-                            <td th:text="${T(java.lang.Math).abs(borrowRecord.daysUntilDue)}" style="color: #dc3545; font-weight: bold;"></td>
-                            <td>
+             <!-- Notifications Section -->
+             <div class="table-container" th:if="${notifications != null and #lists.size(notifications) > 0}">
+                 <h2>Notifications</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Message</th>
+                             <th>Student</th>
+                             <th>Date</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="notification : ${notifications}">
+                             <td th:text="${notification.message}"></td>
+                             <td th:text="${notification.student != null ? notification.student.firstName + ' ' + notification.student.lastName : 'Unknown'}"></td>
+                             <td th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                         </tr>
+                     </tbody>
+                 </table>
+             </div>
+
+             <!-- Overdue Books Alert -->
+             <div th:if="${overdueBooks != null and #lists.size(overdueBooks) > 0}" class="table-container" style="border: 2px solid #dc3545; background-color: #f8d7da;">
+                 <h2 style="color: #721c24;">⚠️ Overdue Books</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Book Title</th>
+                             <th>Borrower</th>
+                             <th>Due Date</th>
+                             <th>Days Overdue</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="borrowRecord : ${overdueBooks}">
+                             <td data-label="Book Title" th:text="${borrowRecord.book.title}"></td>
+                             <td data-label="Borrower" th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
+                             <td data-label="Due Date" th:text="${borrowRecord.dueDate}"></td>
+                             <td data-label="Days Overdue" th:text="${T(java.lang.Math).abs(borrowRecord.daysUntilDue)}" style="color: #dc3545; font-weight: bold;"></td>
+                             <td data-label="Actions">
                                 <form th:action="@{'/admin/book/return/' + ${borrowRecord.id}}" method="post" style="display:inline; margin-right: 5px;">
                                     <button type="submit" class="reservation-action-btn" style="background: #6c757d;">Mark Returned</button>
                                 </form>
                                 <form th:action="@{'/admin/book/extend-due-date/' + ${borrowRecord.id}}" method="post" style="display:inline;">
-                                    <input type="date" name="newDueDate" required style="margin-right: 5px;"/>
+                                    <input type="date" name="newDueDate" required style="margin-right: 5px;" aria-label="New due date"/>
                                     <button type="submit" class="reservation-action-btn" style="background: #ffc107;">Extend</button>
                                 </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                             </td>
+                         </tr>
+                     </tbody>
+                 </table>
+             </div>
 
-            <!-- Books Due Soon Alert -->
-            <div th:if="${dueSoonBooks != null and #lists.size(dueSoonBooks) > 0}" class="table-container" style="border: 2px solid #ffc107; background-color: #fff3cd;">
-                <h2 style="color: #856404;">📅 Due Soon (Within 3 Days)</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Book Title</th>
-                            <th>Borrower</th>
-                            <th>Due Date</th>
-                            <th>Days Until Due</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="borrowRecord : ${dueSoonBooks}">
-                            <td th:text="${borrowRecord.book.title}"></td>
-                            <td th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
-                            <td th:text="${borrowRecord.dueDate}"></td>
-                            <td th:text="${borrowRecord.daysUntilDue}" style="color: #ffc107; font-weight: bold;"></td>
-                            <td>
+             <!-- Books Due Soon Alert -->
+             <div th:if="${dueSoonBooks != null and #lists.size(dueSoonBooks) > 0}" class="table-container" style="border: 2px solid #ffc107; background-color: #fff3cd;">
+                 <h2 style="color: #856404;">📅 Due Soon (Within 3 Days)</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Book Title</th>
+                             <th>Borrower</th>
+                             <th>Due Date</th>
+                             <th>Days Until Due</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="borrowRecord : ${dueSoonBooks}">
+                             <td data-label="Book Title" th:text="${borrowRecord.book.title}"></td>
+                             <td data-label="Borrower" th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
+                             <td data-label="Due Date" th:text="${borrowRecord.dueDate}"></td>
+                             <td data-label="Days Until Due" th:text="${borrowRecord.daysUntilDue}" style="color: #ffc107; font-weight: bold;"></td>
+                             <td data-label="Actions">
                                 <form th:action="@{'/admin/book/return/' + ${borrowRecord.id}}" method="post" style="display:inline; margin-right: 5px;">
                                     <button type="submit" class="reservation-action-btn" style="background: #6c757d;">Mark Returned</button>
                                 </form>
                                 <form th:action="@{'/admin/book/extend-due-date/' + ${borrowRecord.id}}" method="post" style="display:inline;">
-                                    <input type="date" name="newDueDate" required style="margin-right: 5px;"/>
+                                    <input type="date" name="newDueDate" required style="margin-right: 5px;" aria-label="New due date"/>
                                     <button type="submit" class="reservation-action-btn" style="background: #ffc107;">Extend</button>
                                 </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                             </td>
+                         </tr>
+                     </tbody>
+                 </table>
+             </div>
 
-            <!-- All Borrowed Books -->
-            <div class="table-container">
-                <h2>All Borrowed Books</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Book Title</th>
-                            <th>Author</th>
-                            <th>Borrower</th>
-                            <th>Borrower Email</th>
-                            <th>Borrowed Date</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="borrowRecord : ${borrowedBooks}">
-                            <td th:text="${borrowRecord.book.title}"></td>
-                            <td th:text="${borrowRecord.book.author}"></td>
-                            <td th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
-                            <td th:text="${borrowRecord.student.email}"></td>
-                            <td th:text="${#temporals.format(borrowRecord.borrowedDate, 'yyyy-MM-dd')}"></td>
-                            <td th:text="${borrowRecord.dueDate}"></td>
-                            <td>
-                                <span th:if="${borrowRecord.overdue}" style="color: #dc3545; font-weight: bold;">OVERDUE</span>
-                                <span th:if="${!borrowRecord.overdue and borrowRecord.daysUntilDue <= 3}" style="color: #ffc107; font-weight: bold;">DUE SOON</span>
-                                <span th:if="${!borrowRecord.overdue and borrowRecord.daysUntilDue > 3}" style="color: #28a745; font-weight: bold;">ON TIME</span>
+             <!-- All Borrowed Books -->
+             <div class="table-container">
+                 <h2>All Borrowed Books</h2>
+                 <table class="borrowed-table">
+                     <thead>
+                         <tr>
+                             <th>Book Title</th>
+                             <th>Author</th>
+                             <th>Borrower</th>
+                             <th>Borrower Email</th>
+                             <th>Borrowed Date</th>
+                             <th>Due Date</th>
+                             <th>Status</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="borrowRecord : ${borrowedBooks}">
+                            <td data-label="Book Title" th:text="${borrowRecord.book.title}"></td>
+                            <td data-label="Author" th:text="${borrowRecord.book.author}"></td>
+                            <td data-label="Borrower" th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
+                            <td data-label="Borrower Email" th:text="${borrowRecord.student.email}"></td>
+                            <td data-label="Borrowed Date" th:text="${#temporals.format(borrowRecord.borrowedDate, 'yyyy-MM-dd')}"></td>
+                            <td data-label="Due Date" th:text="${borrowRecord.dueDate}"></td>
+                            <td data-label="Status">
+                                <span th:class="'status-badge ' + (${borrowRecord.overdue} ? 'overdue' : ( ${borrowRecord.daysUntilDue} <= 3 ? 'due-soon' : 'on-time'))"
+                                      th:text="${borrowRecord.overdue} ? 'OVERDUE' : ( ${borrowRecord.daysUntilDue} <= 3 ? 'DUE SOON' : 'ON TIME')"></span>
                             </td>
-                            <td>
-                                <form th:action="@{'/admin/book/return/' + ${borrowRecord.id}}" method="post" style="display:inline; margin-right: 5px;">
-                                    <button type="submit" class="reservation-action-btn" style="background: #6c757d; font-size: 0.8em;">Return</button>
-                                </form>
-                                <form th:action="@{'/admin/book/extend-due-date/' + ${borrowRecord.id}}" method="post" style="display:inline;">
-                                    <input type="date" name="newDueDate" required style="margin-right: 5px; font-size: 0.8em;"/>
-                                    <button type="submit" class="reservation-action-btn" style="background: #ffc107; font-size: 0.8em;">Extend</button>
-                                </form>
+                            <td data-label="Actions">
+                                <div class="borrow-actions">
+                                    <form th:action="@{'/admin/book/return/' + ${borrowRecord.id}}" method="post">
+                                        <button type="submit" class="reservation-action-btn" aria-label="Mark returned">
+                                            <i class="fa fa-rotate-left"></i>
+                                            <span class="visually-hidden">Return</span>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{'/admin/book/extend-due-date/' + ${borrowRecord.id}}" method="post" class="extend-form">
+                                        <input type="date" name="newDueDate" required aria-label="New due date"/>
+                                        <button type="submit" class="reservation-action-btn extend-btn">
+                                            <i class="fa fa-calendar-plus"></i>
+                                            <span class="visually-hidden">Extend</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
+                     </tbody>
+                 </table>
+             </div>
 
-            <!-- Reserved Books Table -->
-            <div class="table-container">
-                <h2>Reserved Books</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Book Title</th>
-                            <th>Author</th>
-                            <th>Reserved By</th>
-                            <th>Reserver Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="book : ${books}" th:if="${book.status == 'reserved' and book.reservers != null and #lists.size(book.reservers) > 0}">
-                            <td th:text="${book.title}"></td>
-                            <td th:text="${book.author}"></td>
-                            <td>
-                                <span th:each="reserver : ${book.reservers}" th:text="${reserver.firstName + ' ' + reserver.lastName}"></span><br/>
+             <!-- Pending Reserved Table (moved here) -->
+             <div th:if="${pendingReservations != null and #lists.size(pendingReservations) > 0}" class="table-container">
+                 <h2>Pending Reserved</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Student</th>
+                             <th>Book</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="reservation : ${pendingReservations}">
+                             <td data-label="Student" th:text="${reservation.student != null ? reservation.student.firstName + ' ' + reservation.student.lastName : 'Unknown'}"></td>
+                             <td data-label="Book" th:text="${reservation.book.title}"></td>
+                             <td data-label="Actions">
+                                <div class="action-buttons">
+                                    <form th:action="@{'/admin/reservation/accept/' + ${reservation.id}}" method="post" style="display:inline; margin-right: 5px;">
+                                        <button type="submit" class="reservation-action-btn accept-btn">
+                                            <i class="fa fa-check"></i> Accept
+                                        </button>
+                                    </form>
+                                    <form th:action="@{'/admin/reservation/reject/' + ${reservation.id}}" method="post" style="display:inline;">
+                                        <button type="submit" class="reservation-action-btn reject-btn" onclick="return confirm('Are you sure you want to reject this reservation?')">
+                                            <i class="fa fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
-                            <td>
-                                <span th:each="reserver : ${book.reservers}" th:text="${reserver.email}"></span><br/>
+                        </tr>
+                     </tbody>
+                 </table>
+             </div>
+
+             <!-- Pending Borrowed Table (new) -->
+             <div th:if="${pendingBorrows != null and #lists.size(pendingBorrows) > 0}" class="table-container">
+                 <h2>Pending Borrowed</h2>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>Student</th>
+                             <th>Book</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr th:each="borrowReq : ${pendingBorrows}">
+                             <td data-label="Student" th:text="${borrowReq.student != null ? borrowReq.student.firstName + ' ' + borrowReq.student.lastName : 'Unknown'}"></td>
+                             <td data-label="Book" th:text="${borrowReq.book.title}"></td>
+                             <td data-label="Actions">
+                                <div class="action-buttons">
+                                    <!-- Accept borrow request: posts with default due date (now + 14 days) -->
+                                    <form th:action="@{'/admin/borrow/accept/' + ${borrowReq.id}}" method="post" style="display:inline; margin-right: 5px;">
+                                        <input type="hidden" name="dueDate" th:value="${T(java.time.LocalDate).now().plusDays(14)}" />
+                                        <button type="submit" class="reservation-action-btn accept-btn">
+                                            <i class="fa fa-check"></i> Accept
+                                        </button>
+                                    </form>
+                                    <!-- Reject borrow request -->
+                                    <form th:action="@{'/admin/borrow/reject/' + ${borrowReq.id}}" method="post" style="display:inline;">
+                                        <button type="submit" class="reservation-action-btn reject-btn" onclick="return confirm('Are you sure you want to reject this borrow request?')">
+                                            <i class="fa fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+     </div>
 </main>
 <div sec:authorize="!hasRole('ADMIN')">
     <p>You are not authorized to view this page.</p>
 </div>
-</body>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const profileBtn = document.querySelector('.profile-btn');
-        const profileDropdown = document.getElementById('profileDropdown');
-        let dropdownOpen = false;
-        if (profileBtn && profileDropdown) {
-            profileBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdownOpen = !dropdownOpen;
-                if (dropdownOpen) {
-                    profileDropdown.classList.add('show');
-                } else {
-                    profileDropdown.classList.remove('show');
-                }
-            });
-            document.addEventListener('click', function(e) {
-                if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                    profileDropdown.classList.remove('show');
-                    dropdownOpen = false;
-                }
-            });
-        }
 
-        // Notification logic
-        window.showNotification = function(message, type = 'success') {
-            const bar = document.getElementById('notificationBar');
-            if (!bar) return;
-            bar.textContent = message;
-            bar.className = 'notification-bar ' + type;
-            bar.style.display = 'block';
-            setTimeout(() => { bar.style.display = 'none'; }, 3500);
-        };
-        window.showPersistentNotification = function(message, type = 'success') {
-            const bar = document.getElementById('persistentNotificationBar');
-            if (!bar) return;
-            bar.textContent = message;
-            bar.className = 'notification-bar ' + type;
-            bar.style.display = 'block';
-            if (!document.getElementById('closeNotificationBtn')) {
-                const closeBtn = document.createElement('button');
-                closeBtn.id = 'closeNotificationBtn';
-                closeBtn.textContent = '×';
-                closeBtn.style.float = 'right';
-                closeBtn.style.background = 'none';
-                closeBtn.style.border = 'none';
-                closeBtn.style.fontSize = '1.5rem';
-                closeBtn.style.cursor = 'pointer';
-                closeBtn.onclick = function() {
-                    bar.style.display = 'none';
-                };
-                bar.appendChild(closeBtn);
-            }
-        };
-        // Notification bell logic
-        const notificationBell = document.getElementById('notificationBell');
-        const notificationCount = document.getElementById('notificationCount');
-        let notifications = [];
-        if (notificationBell && notificationCount) {
-            notificationBell.addEventListener('click', function() {
-                if (notifications.length > 0) {
-                    alert(notifications.join('\n'));
-                    notifications = [];
-                    notificationCount.style.display = 'none';
-                    notificationCount.textContent = '0';
-                } else {
-                    alert('No new notifications');
-                }
-            });
-        }
-        window.addNotification = function(message) {
-            notifications.push(message);
-            if (notificationCount) {
-                notificationCount.textContent = notifications.length;
-                notificationCount.style.display = 'inline-block';
-            }
-        };
-    });
-</script>
 <script>
-window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
-        window.location.reload();
+    const profileBtn = document.querySelector('.profile-btn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    let dropdownOpen = false;
+    if (profileBtn && profileDropdown) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownOpen = !dropdownOpen;
+            if (dropdownOpen) {
+                profileDropdown.classList.add('show');
+                profileBtn.setAttribute('aria-expanded', 'true');
+                profileDropdown.setAttribute('aria-hidden', 'false');
+            } else {
+                profileDropdown.classList.remove('show');
+                profileBtn.setAttribute('aria-expanded', 'false');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+            }
+        });
+        document.addEventListener('click', function(e) {
+            if (dropdownOpen && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+                profileBtn.setAttribute('aria-expanded', 'false');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+                dropdownOpen = false;
+            }
+        });
     }
-});
 </script>
-<!-- Dropdown toggle script (admin-book) -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const pBtn = document.querySelector('.profile-btn');
-  const pDropdown = document.getElementById('profileDropdown');
-  let open = false;
-  if (!pBtn || !pDropdown) return;
-  pBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    open = !open;
-    if (open) {
-      pDropdown.classList.add('show');
-      pBtn.setAttribute('aria-expanded', 'true');
-      pDropdown.setAttribute('aria-hidden', 'false');
-    } else {
-      pDropdown.classList.remove('show');
-      pBtn.setAttribute('aria-expanded', 'false');
-      pDropdown.setAttribute('aria-hidden', 'true');
-    }
-  });
-  document.addEventListener('click', function(e) {
-    if (open && !pBtn.contains(e.target) && !pDropdown.contains(e.target)) {
-      pDropdown.classList.remove('show');
-      pBtn.setAttribute('aria-expanded', 'false');
-      pDropdown.setAttribute('aria-hidden', 'true');
-      open = false;
-    }
-  });
-});
-</script>
+
+</body>
+<!-- Removed unused acceptReservation JS function to reduce warnings -->
 </html>
