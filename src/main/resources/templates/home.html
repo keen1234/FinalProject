@@ -77,9 +77,9 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="book : ${dueBooks}">
-                        <td class="book-title" th:text="${book.title}">Book Title</td>
-                        <td class="book-due" th:text="${book.dueDate}">Due Date</td>
+                    <tr th:each="record : ${dueBooks}">
+                        <td class="book-title" th:text="${record.book != null ? record.book.title : 'Unknown Title'}">Book Title</td>
+                        <td class="book-due" th:text="${record.dueDate}">Due Date</td>
                     </tr>
                     </tbody>
                 </table>

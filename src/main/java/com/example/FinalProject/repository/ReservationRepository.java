@@ -4,17 +4,13 @@ import com.example.FinalProject.model.Reservation;
 import com.example.FinalProject.model.Student;
 import com.example.FinalProject.model.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    // Returns active reservations for the given student.
-    // Use string literal 'ACTIVE' to avoid referencing an enum constant that may not exist.
-    @Query("SELECT r FROM Reservation r WHERE r.student.id = :studentId AND r.status = 'ACTIVE' ORDER BY r.id DESC")
-    // existing entity-based method (if still used elsewhere)
+    // Existing entity-based method: find reservations by Student entity and status.
+    // Keep this as a derived query method (Spring Data will generate the correct JPQL).
     List<Reservation> findByStudentAndStatus(Student student, Reservation.Status status);
 
     // id-based methods to avoid detached entity problems and to satisfy usages in controllers
