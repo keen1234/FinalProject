@@ -75,6 +75,9 @@ window.borrowReservedBook = borrowReservedBook;
 <main class="main-content" sec:authorize="hasRole('ADMIN')">
      <div class="container">
          <div class="container-inner">
+                <div th:if="${adminClearStatus == 'success'}" class="alert alert-success" style="background:#e8f5e9;border-left:4px solid #43a047;padding:10px;margin-bottom:1rem;">Admin notifications cleared successfully.</div>
+                <div th:if="${adminClearStatus == 'failed'}" class="alert alert-error" style="background:#ffebee;border-left:4px solid #e53935;padding:10px;margin-bottom:1rem;">Failed to clear admin notifications. Check logs.</div>
+
              <div id="notificationBar" class="notification-bar" style="display:none;"></div>
              <div id="persistentNotificationBar" class="notification-bar" style="display:none; position:static; margin-bottom:1rem;"></div>
 
@@ -291,13 +294,11 @@ window.borrowReservedBook = borrowReservedBook;
                  </table>
              </div>
 
-             <!-- Notifications Section -->
-             <div class="table-container" th:if="${notifications != null and #lists.size(notifications) > 0}">
+             <!-- Notifications Section (uses notificationsView for safe rendering) -->
+             <div class="table-container" th:if="${notificationsView != null and #lists.size(notificationsView) > 0}">
                  <div style="display:flex;align-items:center;justify-content:space-between;">
                     <h2>Notifications</h2>
-                    <form th:action="@{/admin/notifications/clear}" method="post" style="margin:0;">
-                        <button type="submit" class="primary-btn" style="background:#f44336;border:none;color:#fff;padding:0.5rem 0.75rem;border-radius:6px;">Clear All</button>
-                    </form>
+                    <!-- Admin clear button removed per request; server-side handler retained. -->
                  </div>
                  <table>
                      <thead>
@@ -308,9 +309,9 @@ window.borrowReservedBook = borrowReservedBook;
                          </tr>
                      </thead>
                      <tbody>
-                         <tr th:each="notification : ${notifications}">
+                         <tr th:each="notification : ${notificationsView}">
                              <td th:text="${notification.message}"></td>
-                             <td th:text="${notification.student != null ? notification.student.firstName + ' ' + notification.student.lastName : 'Unknown'}"></td>
+                             <td th:text="${notification.studentName}"></td>
                              <td th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                          </tr>
                      </tbody>

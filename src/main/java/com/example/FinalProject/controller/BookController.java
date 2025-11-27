@@ -93,6 +93,7 @@ public class BookController {
     public String showBooks(
             @RequestParam(value = "studentSearch", required = false) String studentSearch,
             @RequestParam(value = "bookSearch", required = false) String bookSearch,
+            @RequestParam(value = "adminClear", required = false) String adminClear,
             Model model, Authentication authentication) {
         // If bookSearch is provided, show only available books matching title or author.
         List<Book> books;
@@ -127,8 +128,28 @@ public class BookController {
             .collect(Collectors.toList());
         model.addAttribute("acceptedReservations", acceptedReservations);
         
-        List<Notification> notifications = notificationRepository.findAll();
+        List<Notification> notifications = notificationRepository.findAll().stream()
+            .filter(n -> n.getAdmin() != null)
+            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+            .collect(Collectors.toList());
         model.addAttribute("notifications", notifications);
+        
+        // Build a safe view model for notifications to avoid template accessing entities directly
+        List<Map<String, Object>> notificationsView = notifications.stream().map(n -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", n.getId());
+            m.put("message", n.getMessage());
+            if (n.getStudent() != null) {
+                String studentName = (n.getStudent().getFirstName() == null ? "" : n.getStudent().getFirstName())
+                        + (n.getStudent().getLastName() == null ? "" : " " + n.getStudent().getLastName());
+                m.put("studentName", studentName.trim());
+            } else {
+                m.put("studentName", "Unknown");
+            }
+            m.put("createdAt", n.getCreatedAt());
+            return m;
+        }).collect(Collectors.toList());
+        model.addAttribute("notificationsView", notificationsView);
         
         // Add borrowed books information
         List<BorrowRecord> borrowedBooks = borrowRecordRepository.findByStatusOrderByDueDateAsc(BorrowRecord.Status.BORROWED);
@@ -179,6 +200,10 @@ public class BookController {
                 admin.put("status", "Active");
             }
             model.addAttribute("admin", admin);
+        }
+        // If redirected after clearing admin notifications, pass status to template
+        if (adminClear != null) {
+            model.addAttribute("adminClearStatus", adminClear);
         }
         return "admin-book";
     }
@@ -602,16 +627,48 @@ public class BookController {
 
      @PreAuthorize("hasRole('ADMIN')")
      @PostMapping("/admin/notifications/clear")
-     public String clearAdminNotifications() {
-         try {
-             List<Notification> all = notificationRepository.findAll();
-             List<Notification> adminOnly = all.stream().filter(n -> n.getAdmin() != null).collect(Collectors.toList());
-             if (!adminOnly.isEmpty()) {
-                 notificationRepository.deleteAll(adminOnly);
-             }
-         } catch (Exception e) {
-             System.err.println("Failed to clear admin notifications: " + e.getMessage());
-         }
-         return "redirect:/admin/book";
+     public String clearAdminNotifications(Authentication authentication) {
+        boolean ok = false;
+        try {
+            if (authentication != null && authentication.isAuthenticated()) {
+                Object principal = authentication.getPrincipal();
+                System.out.println("clearAdminNotifications called by principal: " + principal);
+            }
+            // Count admin-targeted notifications before delete (for debugging)
+            long before = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).count();
+            System.out.println("Admin notifications before clear: " + before);
+
+            List<Notification> all = notificationRepository.findAll();
+            List<Notification> adminOnly = all.stream().filter(n -> n.getAdmin() != null).collect(Collectors.toList());
+            if (!adminOnly.isEmpty()) {
+                List<Long> idsToDelete = adminOnly.stream().map(Notification::getId).collect(Collectors.toList());
+                notificationRepository.deleteAllById(idsToDelete);
+            }
+
+            long after = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).count();
+            System.out.println("Admin notifications after clear: " + after);
+            System.out.println("Admin notifications cleared by admin action. Deleted count: " + adminOnly.size());
+             ok = true;
+        } catch (Exception e) {
+            System.err.println("Failed to clear admin notifications: " + e.getMessage());
+        }
+        return ok ? "redirect:/admin/book?adminClear=success" : "redirect:/admin/book?adminClear=failed";
+     }
+
+     @PreAuthorize("hasRole('ADMIN')")
+     @GetMapping("/admin/notifications/count")
+     @ResponseBody
+     public Map<String, Object> adminNotificationsCount() {
+         List<Notification> adminNotifs = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).collect(Collectors.toList());
+         List<Map<String, Object>> list = adminNotifs.stream().map(n -> {
+             Map<String, Object> m = new HashMap<>();
+             m.put("id", n.getId());
+             m.put("message", n.getMessage());
+             return m;
+         }).collect(Collectors.toList());
+         Map<String, Object> resp = new HashMap<>();
+         resp.put("count", adminNotifs.size());
+         resp.put("notifications", list);
+         return resp;
      }
  }
