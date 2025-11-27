@@ -312,39 +312,6 @@ window.borrowReservedBook = borrowReservedBook;
                  </table>
              </div>
 
-             <!-- Overdue Books Alert -->
-             <div th:if="${overdueBooks != null and #lists.size(overdueBooks) > 0}" class="table-container" style="border: 2px solid #dc3545; background-color: #f8d7da;">
-                 <h2 style="color: #721c24;">⚠️ Overdue Books</h2>
-                 <table>
-                     <thead>
-                         <tr>
-                             <th>Book Title</th>
-                             <th>Borrower</th>
-                             <th>Due Date</th>
-                             <th>Days Overdue</th>
-                             <th>Actions</th>
-                         </tr>
-                     </thead>
-                     <tbody>
-                         <tr th:each="borrowRecord : ${overdueBooks}">
-                             <td data-label="Book Title" th:text="${borrowRecord.book.title}"></td>
-                             <td data-label="Borrower" th:text="${borrowRecord.student.firstName + ' ' + borrowRecord.student.lastName}"></td>
-                             <td data-label="Due Date" th:text="${borrowRecord.dueDate}"></td>
-                             <td data-label="Days Overdue" th:text="${T(java.lang.Math).abs(borrowRecord.daysUntilDue)}" style="color: #dc3545; font-weight: bold;"></td>
-                             <td data-label="Actions">
-                                <form th:action="@{'/admin/book/return/' + ${borrowRecord.id}}" method="post" style="display:inline; margin-right: 5px;">
-                                    <button type="submit" class="reservation-action-btn" style="background: #6c757d;">Mark Returned</button>
-                                </form>
-                                <form th:action="@{'/admin/book/extend-due-date/' + ${borrowRecord.id}}" method="post" style="display:inline;">
-                                    <input type="date" name="newDueDate" required style="margin-right: 5px;" aria-label="New due date"/>
-                                    <button type="submit" class="reservation-action-btn" style="background: #ffc107;">Extend</button>
-                                </form>
-                             </td>
-                         </tr>
-                     </tbody>
-                 </table>
-             </div>
-
              <!-- Books Due Soon Alert -->
              <div th:if="${dueSoonBooks != null and #lists.size(dueSoonBooks) > 0}" class="table-container" style="border: 2px solid #ffc107; background-color: #fff3cd;">
                  <h2 style="color: #856404;">📅 Due Soon (Within 3 Days)</h2>
