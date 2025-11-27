@@ -342,12 +342,13 @@ window.borrowReservedBook = borrowReservedBook;
                             </td>
                             <td data-label="Actions">
                                 <div class="borrow-actions">
-                                    <form th:action="@{'/admin/book/return/' + ${borrowRecord.id}}" method="post">
+                                    <form th:action="@{/admin/book/return/{id}(id=${borrowRecord.id})}" method="post">
                                         <button type="submit" class="reservation-action-btn" aria-label="Mark returned">
-                                            <i class="fa fa-rot<span>Returned</span>
+                                            <i class="fa fa-rotate-left"></i>
+                                            <span>Returned</span>
                                         </button>
                                     </form>
-                                    <form th:action="@{'/admin/book/extend-due-date/' + ${borrowRecord.id}}" method="post" class="extend-form">
+                                    <form th:action="@{/admin/book/extend-due-date/{id}(id=${borrowRecord.id})}" method="post" class="extend-form">
                                         <input type="date" name="newDueDate" required aria-label="New due date"/>
                                         <button type="submit" class="reservation-action-btn extend-btn">
                                             <i class="fa fa-calendar-plus"></i>
@@ -356,7 +357,7 @@ window.borrowReservedBook = borrowReservedBook;
                                     </form>
                                 </div>
                             </td>
-                        </tr>
+                         </tr>
                      </tbody>
                  </table>
              </div>

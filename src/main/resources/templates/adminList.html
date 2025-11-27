@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,8 +19,8 @@
             </ul>
         </div>
         <div class="nav-auth">
-            <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
-            <div class="profile-menu" sec:authorize="isAuthenticated()">
+            <a href="/login" class="nav-link" th:if="${admin == null}">Login</a>
+            <div class="profile-menu" th:if="${admin != null}">
                 <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
                     <span class="profile-logo" th:text="${admin != null and admin.name != null and #strings.length(admin.name) > 0 ? admin.name.substring(0,1) : 'A'}">A</span>
                 </button>
