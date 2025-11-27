@@ -100,9 +100,19 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="book : ${reservedBooks}">
-                        <td class="book-title" th:text="${book.title}">Book Title</td>
-                        <td class="book-status" th:text="${book.status}">Reserved On</td>
+                    <tr th:each="res : ${reservedBooks}" th:with="book=${res.book}">
+                        <!-- Display book title when available; otherwise include helpful fallbacks -->
+                        <td class="book-title">
+                            <span th:if="${book != null and book.title != null and book.title != ''}" th:text="${book.title}">Book Title</span>
+                            <span th:if="${book != null and (book.title == null or book.title == '')}" th:text="${'Untitled (book id: ' + book.id + ')'}">Untitled</span>
+                            <span th:if="${book == null}" th:text="${'Reservation #' + res.id}">Reservation #</span>
+                        </td>
+                        <!-- Show reservation timestamp when present, otherwise fall back to status or reservation id -->
+                        <td class="book-status">
+                            <span th:if="${res.createdAt != null}" th:text="${#temporals.format(res.createdAt, 'yyyy-MM-dd HH:mm')}">Reserved On</span>
+                            <span th:if="${res.createdAt == null and res.status != null}" th:text="${res.status}">Status</span>
+                            <span th:if="${res.createdAt == null and res.status == null}" th:text="${'Reservation #' + res.id}">—</span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

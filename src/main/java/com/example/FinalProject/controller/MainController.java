@@ -75,13 +75,9 @@ public class MainController {
                     studentId,
                     java.util.List.of(Reservation.Status.pending, Reservation.Status.accepted)
                 );
-                // Map reservations to Book objects for the template (home.html expects book.title etc.)
-                List<Book> reservedBooks = reservedReservations.stream()
-                    .map(Reservation::getBook)
-                    .filter(java.util.Objects::nonNull)
-                    .collect(Collectors.toList());
+                // Keep reservations as Reservation objects so template can access r.book and r.createdAt
                 model.addAttribute("dueBooks", dueBooks);
-                model.addAttribute("reservedBooks", reservedBooks);
+                model.addAttribute("reservedBooks", reservedReservations);
             } catch (Exception e) {
                 model.addAttribute("dueBooks", List.of());
                 model.addAttribute("reservedBooks", List.of());

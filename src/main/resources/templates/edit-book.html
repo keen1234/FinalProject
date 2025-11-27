@@ -1,32 +1,46 @@
-<!-- src/main/resources/templates/edit-profile.html -->
+<!-- src/main/resources/templates/edit-book.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit Profile</title>
+    <title>Edit Book</title>
     <link rel="stylesheet" href="/css/book.css">
 </head>
 <body>
-<h1 style="text-align: center;">Edit Profile</h1>
-<form th:action="@{/profile/edit}" method="post" th:object="${user}">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <label>Username
-        <input type="text" th:field="*{username}" required />
+<h1 style="text-align: center;">Edit Book</h1>
+<!-- Bind to the 'book' model attribute provided by the controller -->
+<form th:action="@{/admin/book/edit/{id}(id=${book.id})}" method="post" th:object="${book}">
+    <!-- Only render CSRF hidden input when a CSRF token is available to avoid parse-time errors -->
+    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+    <label>Title
+        <input type="text" th:field="*{title}" required />
     </label>
-    <label>Email
-        <input type="email" th:field="*{email}" required />
+
+    <label>Author
+        <input type="text" th:field="*{author}" />
     </label>
-    <label>Display name
-        <input type="text" th:field="*{displayName}" />
+
+    <label>Published Date
+        <input type="date" th:field="*{datePublish}" th:value="${book.datePublish != null ? #temporals.format(book.datePublish,'yyyy-MM-dd') : ''}" />
     </label>
-    <label>Birth date
-        <input type="date" th:field="*{birthDate}" th:value="${#dates.format(user.birthDate,'yyyy-MM-dd')}" />
+
+    <label>Genre
+        <input type="text" th:field="*{genre}" />
     </label>
-    <label>Bio
-        <textarea th:field="*{bio}"></textarea>
+
+    <label>Language
+        <input type="text" th:field="*{language}" />
     </label>
-    <button type="submit">Save</button>
-    <button type="button" onclick="window.location.href='/profile'">Cancel</button>
+
+    <label>Description
+        <textarea th:field="*{description}" rows="6"></textarea>
+    </label>
+
+    <div style="margin-top:1rem;">
+        <button type="submit">Save</button>
+        <button type="button" onclick="window.location.href='/admin/book'">Cancel</button>
+    </div>
 </form>
 </body>
 </html>

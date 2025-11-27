@@ -60,8 +60,8 @@
 <main>
 <!-- 3D Image Ring Section -->
 <section id="main" class="main-section main-below-nav">
-  <!-- Typing Text -->
-  <div id="typing-text" data-delay="500" data-duration="2000" data-loop="true" class="typing-text">
+  <!-- Static heading (removed typing animation) -->
+  <div id="team-heading" class="static-heading" aria-hidden="false">
     Introducing The team behind the Librows
   </div>
   <!-- Dot Background only -->
@@ -81,8 +81,10 @@
           <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=1');"></div>
           <div class="card-face back">
             <div class="back-content">
-              <h3>City in the Clouds</h3>
-              <p>Sample text: A serene skyline peeks above the morning fog.</p>
+              <h3 class="member-name">Alex Morgan</h3>
+              <p class="member-age">Age: 29</p>
+              <p class="member-role">Role: Frontend Developer</p>
+              <p class="member-contact">Email: alex.morgan@example.com · Phone: (555) 123-4567</p>
             </div>
           </div>
         </div>
@@ -92,8 +94,10 @@
           <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=2');"></div>
           <div class="card-face back">
             <div class="back-content">
-              <h3>Glass and Steel</h3>
-              <p>Sample text: A modern tower rises from a sea of clouds.</p>
+              <h3 class="member-name">Priya Patel</h3>
+              <p class="member-age">Age: 31</p>
+              <p class="member-role">Role: Backend Engineer</p>
+              <p class="member-contact">Email: priya.patel@example.com · Phone: (555) 234-5678</p>
             </div>
           </div>
         </div>
@@ -103,8 +107,10 @@
           <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=3');"></div>
           <div class="card-face back">
             <div class="back-content">
-              <h3>Twilight Hues</h3>
-              <p>Sample text: Distant hills fade into a tranquil purple sky.</p>
+              <h3 class="member-name">Carlos Ruiz</h3>
+              <p class="member-age">Age: 27</p>
+              <p class="member-role">Role: UX Designer</p>
+              <p class="member-contact">Email: carlos.ruiz@example.com · Phone: (555) 345-6789</p>
             </div>
           </div>
         </div>
@@ -114,8 +120,10 @@
           <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=4');"></div>
           <div class="card-face back">
             <div class="back-content">
-              <h3>Golden Friends</h3>
-              <p>Sample text: Two pups enjoy a sunny afternoon in the park.</p>
+              <h3 class="member-name">Sakura Kobayashi</h3>
+              <p class="member-age">Age: 30</p>
+              <p class="member-role">Role: Product Manager</p>
+              <p class="member-contact">Email: sakura.k@example.com · Phone: (555) 456-7890</p>
             </div>
           </div>
         </div>
@@ -125,8 +133,10 @@
           <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=5');"></div>
           <div class="card-face back">
             <div class="back-content">
-              <h3>Verdant Frame</h3>
-              <p>Sample text: A portrait framed by rich green foliage.</p>
+              <h3 class="member-name">Liam O'Connor</h3>
+              <p class="member-age">Age: 26</p>
+              <p class="member-role">Role: DevOps Engineer</p>
+              <p class="member-contact">Email: liam.oconnor@example.com · Phone: (555) 567-8901</p>
             </div>
           </div>
         </div>
@@ -136,8 +146,10 @@
           <div class="card-face front" style="background-image: url('https://picsum.photos/800/1200?random=6');"></div>
           <div class="card-face back">
             <div class="back-content">
-              <h3>Stripes</h3>
-              <p>Sample text: A close look reveals the majesty of stripes.</p>
+              <h3 class="member-name">Nina Berg</h3>
+              <p class="member-age">Age: 28</p>
+              <p class="member-role">Role: QA Engineer</p>
+              <p class="member-contact">Email: nina.berg@example.com · Phone: (555) 678-9012</p>
             </div>
           </div>
         </div>
@@ -349,12 +361,20 @@ if (ring) {
 function openLightboxFromCard(card) {
   const front = card.querySelector('.card-face.front');
   const title = card.querySelector('.back-content h3')?.textContent || '';
-  const desc = card.querySelector('.back-content p')?.textContent || '';
+  // Collect all paragraph lines (age, role, contact) and join with line breaks for the lightbox
+  const descNodes = card.querySelectorAll('.back-content p');
+  let desc = '';
+  if (descNodes && descNodes.length > 0) {
+    // Escape HTML and join with <br> so the lightbox shows each line
+    desc = Array.from(descNodes).map(p => {
+      return (p.textContent || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }).join('<br>');
+  }
   const bg = front ? getComputedStyle(front).backgroundImage : 'none';
 
   if (lbMedia) lbMedia.style.backgroundImage = bg;
   if (lbTitle) lbTitle.textContent = title;
-  if (lbDesc) lbDesc.textContent = desc;
+  if (lbDesc) lbDesc.innerHTML = desc;
 
   if (lightbox) {
     lightbox.classList.add('open');
@@ -456,55 +476,6 @@ window.addEventListener("touchmove", onDrag, { passive: true });
 window.addEventListener("mouseup", endDrag);
 window.addEventListener("touchend", endDrag);
 
-// Typing animation (provided implementation)
-function initTypingText(el) {
-  const text = el.textContent;
-  el.textContent = ""; // clear initial
-  const delay = parseInt(el.dataset.delay || "0", 10);
-  const duration = parseInt(el.dataset.duration || "2000", 10);
-  const loopAttr = String(el.dataset.loop || "false").toLowerCase();
-  // loop modes: false -> no repeat; "true" -> infinite; "once" -> exactly one repeat
-  const loopMode = loopAttr === "true" ? "infinite" : loopAttr === "once" ? "once" : "none";
-
-  const chars = text.split("").map(c => (c === " " ? "\u00A0" : c));
-  const perCharDelay = duration / Math.max(chars.length, 1);
-
-  // Create span for each character
-  chars.forEach(char => {
-    const span = document.createElement("span");
-    span.textContent = char;
-    span.classList.add("typing-char");
-    el.appendChild(span);
-  });
-
-  const spans = el.querySelectorAll(".typing-char");
-
-  let repeatsLeft = loopMode === 'once' ? 1 : 0;
-
-  function animate() {
-    spans.forEach((span, i) => {
-      setTimeout(() => {
-        span.classList.add("visible");
-      }, delay + i * perCharDelay);
-    });
-
-    if (loopMode === 'infinite' || repeatsLeft > 0) {
-      // Reset after animation completes
-      setTimeout(() => {
-        spans.forEach(span => span.classList.remove("visible"));
-        if (repeatsLeft > 0) repeatsLeft -= 1;
-        animate(); // restart
-      }, delay + duration + 1000);
-    }
-  }
-
-  animate();
-}
-
-// Init all .typing-text
-document.querySelectorAll(".typing-text").forEach(el => {
-  initTypingText(el);
-});
 
 // Mobile hamburger toggle behavior (match home.html)
 (function() {

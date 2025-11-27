@@ -37,6 +37,20 @@
   color: #000000; /* gray text for "Hello, Meet My Team" */
 }
 
+/* Static team heading: big, bold, responsive */
+#team-heading, .static-heading {
+  /* slightly reduced size for a more compact heading */
+  font-size: clamp(1.1rem, 2.6vw, 1.75rem);
+  font-weight: 700; /* remain bold but not overly heavy */
+  letter-spacing: 0.02em;
+  text-transform: none;
+  margin-top: 2rem;
+  margin-bottom: 1.75rem;
+  text-align: center;
+  color: #0b1220; /* dark near-black for good contrast */
+  line-height: 1.1;
+}
+
 /* Typing effect characters: start hidden, fade in when .visible is added */
 .typing-char {
   opacity: 0;
