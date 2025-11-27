@@ -298,7 +298,10 @@ window.borrowReservedBook = borrowReservedBook;
              <div class="table-container" th:if="${notificationsView != null and #lists.size(notificationsView) > 0}">
                  <div style="display:flex;align-items:center;justify-content:space-between;">
                     <h2>Notifications</h2>
-                    <!-- Admin clear button removed per request; server-side handler retained. -->
+                    <!-- Clear all admin notifications button -->
+                    <form th:action="@{/admin/notifications/clear}" method="post" onsubmit="return confirm('Clear all admin notifications? This cannot be undone.');" style="margin:0;">
+                        <button type="submit" class="secondary-btn" aria-label="Clear all notifications">Clear All</button>
+                    </form>
                  </div>
                  <table>
                      <thead>

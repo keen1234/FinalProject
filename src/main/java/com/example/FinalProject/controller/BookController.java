@@ -638,16 +638,12 @@ public class BookController {
             long before = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).count();
             System.out.println("Admin notifications before clear: " + before);
 
-            List<Notification> all = notificationRepository.findAll();
-            List<Notification> adminOnly = all.stream().filter(n -> n.getAdmin() != null).collect(Collectors.toList());
-            if (!adminOnly.isEmpty()) {
-                List<Long> idsToDelete = adminOnly.stream().map(Notification::getId).collect(Collectors.toList());
-                notificationRepository.deleteAllById(idsToDelete);
-            }
+            // Use a JPQL delete defined in repository to remove admin notifications efficiently
+            notificationRepository.deleteAdminNotifications();
 
             long after = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).count();
             System.out.println("Admin notifications after clear: " + after);
-            System.out.println("Admin notifications cleared by admin action. Deleted count: " + adminOnly.size());
+            System.out.println("Admin notifications cleared by admin action.");
              ok = true;
         } catch (Exception e) {
             System.err.println("Failed to clear admin notifications: " + e.getMessage());
