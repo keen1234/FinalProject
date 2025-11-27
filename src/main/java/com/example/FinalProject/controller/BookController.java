@@ -599,4 +599,19 @@ public class BookController {
         }
         return "redirect:/admin/book";
     }
-}
+
+     @PreAuthorize("hasRole('ADMIN')")
+     @PostMapping("/admin/notifications/clear")
+     public String clearAdminNotifications() {
+         try {
+             List<Notification> all = notificationRepository.findAll();
+             List<Notification> adminOnly = all.stream().filter(n -> n.getAdmin() != null).collect(Collectors.toList());
+             if (!adminOnly.isEmpty()) {
+                 notificationRepository.deleteAll(adminOnly);
+             }
+         } catch (Exception e) {
+             System.err.println("Failed to clear admin notifications: " + e.getMessage());
+         }
+         return "redirect:/admin/book";
+     }
+ }

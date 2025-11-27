@@ -293,7 +293,12 @@ window.borrowReservedBook = borrowReservedBook;
 
              <!-- Notifications Section -->
              <div class="table-container" th:if="${notifications != null and #lists.size(notifications) > 0}">
-                 <h2>Notifications</h2>
+                 <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <h2>Notifications</h2>
+                    <form th:action="@{/admin/notifications/clear}" method="post" style="margin:0;">
+                        <button type="submit" class="primary-btn" style="background:#f44336;border:none;color:#fff;padding:0.5rem 0.75rem;border-radius:6px;">Clear All</button>
+                    </form>
+                 </div>
                  <table>
                      <thead>
                          <tr>

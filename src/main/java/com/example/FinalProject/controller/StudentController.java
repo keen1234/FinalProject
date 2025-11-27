@@ -347,5 +347,23 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/student/notifications/clear")
+    public String clearStudentNotifications(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
+            Student student = userDetails.getStudent();
+            // Find all notifications for this student and delete them
+            List<Notification> notifications = notificationRepository.findByStudentOrderByCreatedAtDesc(student);
+            if (notifications != null && !notifications.isEmpty()) {
+                notificationRepository.deleteAll(notifications);
+            }
+        }
+        return "redirect:/student/notifications";
+    }
+
 
 }

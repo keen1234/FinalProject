@@ -121,6 +121,10 @@
         Back to Home
     </a>
     
+    <form th:action="@{/student/notifications/clear}" method="post" style="display:inline-block; margin-left:0.5rem;">
+        <button type="submit" class="back-btn" style="background:#f44336;"> <i class="fa fa-trash"></i> Clear All</button>
+    </form>
+
     <h1 style="color: #333; margin-bottom: 2rem;">
         <i class="fa fa-bell" style="margin-right: 0.5rem; color: #2196f3;"></i>
         My Notifications
