@@ -25,6 +25,16 @@ public class Notification {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // New enum to explicitly indicate intended recipient role
+    public enum RecipientRole {
+        STUDENT,
+        ADMIN
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recipient_role")
+    private RecipientRole recipientRole = RecipientRole.STUDENT; // default for backward compatibility
+
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -38,4 +48,7 @@ public class Notification {
     public void setRead(boolean isRead) { this.isRead = isRead; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public RecipientRole getRecipientRole() { return recipientRole; }
+    public void setRecipientRole(RecipientRole recipientRole) { this.recipientRole = recipientRole; }
 }

@@ -17,6 +17,7 @@ import com.example.FinalProject.service.AdminDetails;
 import com.example.FinalProject.service.AdminService;
 import com.example.FinalProject.model.Notification;
 import com.example.FinalProject.repository.NotificationRepository;
+import com.example.FinalProject.service.NotificationService;
 import org.springframework.security.core.context.SecurityContextImpl;
 
 import com.example.FinalProject.repository.BorrowRecordRepository;
@@ -46,6 +47,9 @@ public class MainController {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
     private BorrowRecordRepository borrowRecordRepository;
 
     @Autowired
@@ -59,13 +63,17 @@ public class MainController {
 
     @GetMapping("/home")
     public String home(Authentication authentication, Model model) {
+        // If the current user is an admin, redirect to admin home to avoid rendering student-only template parts
+        if (authentication != null && authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return "redirect:/admin-home";
+        }
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof StudentDetails) {
             StudentDetails userDetails = (StudentDetails) authentication.getPrincipal();
             model.addAttribute("student", userDetails.getStudent());
 
             // Add unread notification count for initial display
-            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(userDetails.getStudent());
-            model.addAttribute("unreadNotificationCount", unreadNotifications.size());
+            long cnt = notificationService.countUnreadForStudent(userDetails.getStudent().getId());
+            model.addAttribute("unreadNotificationCount", cnt);
 
             // Fetch due books and reserved books for the current student and add to model
             try {
@@ -95,8 +103,8 @@ public class MainController {
             model.addAttribute("student", userDetails.getStudent());
 
             // Add unread notification count for initial display
-            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(userDetails.getStudent());
-            model.addAttribute("unreadNotificationCount", unreadNotifications.size());
+            long cnt = notificationService.countUnreadForStudent(userDetails.getStudent().getId());
+            model.addAttribute("unreadNotificationCount", cnt);
         }
         return "about";
     }
@@ -187,9 +195,7 @@ public class MainController {
         if (currentAdmin != null) {
             // capture admin id in an effectively-final variable for use inside lambda
             Long currentAdminId = currentAdmin.getId();
-            long cnt = notificationRepository.findAll().stream()
-                .filter(n -> n.getAdmin() != null && n.getAdmin().getId() != null && n.getAdmin().getId().equals(currentAdminId) && !n.isRead())
-                .count();
+            long cnt = notificationService.countUnreadForAdmin(currentAdminId);
             unreadCount = (int) cnt;
         }
         model.addAttribute("unreadNotificationCount", unreadCount);

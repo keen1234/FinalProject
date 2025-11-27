@@ -34,13 +34,13 @@
             <div class="profile-menu"
                  sec:authorize="isAuthenticated()"
                  th:with="studentDetails=${#authentication.principal},
-                          student=${studentDetails.student}">
+                          student=${studentDetails != null && studentDetails.student != null ? studentDetails.student : null}">
                 <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
-                    <span class="profile-logo" th:text="${student.firstName.substring(0,1)}">U</span>
+                    <span class="profile-logo" th:text="${student != null && student.firstName != null ? student.firstName.substring(0,1) : 'U'}">U</span>
                 </button>
                 <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
-                        <div class="profile-logo-large" th:text="${student.firstName.substring(0,1)}">U</div>
+                        <div class="profile-logo-large" th:text="${student != null && student.firstName != null ? student.firstName.substring(0,1) : 'U'}">U</div>
                         <div class="profile-text-block">
                             <strong class="profile-name" th:text="${student.firstName + ' ' + student.lastName}">User Name</strong>
                             <span class="profile-email" th:text="${student.email}">user@email.com</span>

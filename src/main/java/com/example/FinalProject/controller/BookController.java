@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import com.example.FinalProject.service.NotificationService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,6 +51,9 @@ public class BookController {
 
     @Autowired
     private AdminRepository adminRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/book")
     public String listBooks(
@@ -128,10 +132,16 @@ public class BookController {
             .collect(Collectors.toList());
         model.addAttribute("acceptedReservations", acceptedReservations);
         
-        List<Notification> notifications = notificationRepository.findAll().stream()
-            .filter(n -> n.getAdmin() != null)
-            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-            .collect(Collectors.toList());
+        // Determine current admin entity (if available) and fetch admin-targeted notifications
+        com.example.FinalProject.model.admin currentAdminEntity = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                String username = ((UserDetails) principal).getUsername();
+                currentAdminEntity = adminRepository.findByEmailIgnoreCase(username);
+            }
+        }
+        List<Notification> notifications = notificationService.findAdminNotificationsForAdmin(currentAdminEntity);
         model.addAttribute("notifications", notifications);
         
         // Build a safe view model for notifications to avoid template accessing entities directly
@@ -340,14 +350,10 @@ public class BookController {
         }
         studentRepository.save(student);
         bookRepository.save(book);
-        // Send notification to all admins
+        // Send notification to all admins (preserve origin student)
         List<admin> admins = adminRepository.findAll();
         for (admin adm : admins) {
-            Notification adminNotif = new Notification();
-            adminNotif.setAdmin(adm);
-            adminNotif.setStudent(student); // Set student reference for admin notifications
-            adminNotif.setMessage("New reservation request: '" + book.getTitle() + "' by " + student.getFirstName() + " " + student.getLastName());
-            notificationRepository.save(adminNotif);
+            notificationService.createAdminNotification(adm, student, "New reservation request: '" + book.getTitle() + "' by " + student.getFirstName() + " " + student.getLastName());
         }
         response.put("message", "Reservation request sent to admin!");
         return ResponseEntity.ok(response);
@@ -387,11 +393,8 @@ public class BookController {
                     bookRepository.save(book);
                     
                     // Send acceptance notification to student
-                    Notification notification = new Notification();
-                    notification.setStudent(student);
-                    notification.setMessage("Great news! Your reservation for '" + book.getTitle() + "' has been accepted. Please come to the library to pick up the book and complete the borrowing process.");
-                    notificationRepository.save(notification);
-                    
+                    notificationService.createStudentNotification(student, "Great news! Your reservation for '" + book.getTitle() + "' has been accepted. Please come to the library to pick up the book and complete the borrowing process.");
+
                     System.out.println("Reservation accepted for book '" + book.getTitle() + "' by student '" + student.getFirstName() + " " + student.getLastName() + "'");
                 }
             }
@@ -435,12 +438,11 @@ public class BookController {
                 bookRepository.save(book);
 
                 // Send rejection notification to student (use provided message if given)
-                Notification notification = new Notification();
-                notification.setStudent(student);
-                notification.setMessage(notifyMessage != null && !notifyMessage.trim().isEmpty()
+                // Send rejection notification to student (use provided message if given)
+                String msg = notifyMessage != null && !notifyMessage.trim().isEmpty()
                     ? notifyMessage
-                    : "Your reservation for '" + book.getTitle() + "' was rejected. The book is now available for other reservations.");
-                notificationRepository.save(notification);
+                    : "Your reservation for '" + book.getTitle() + "' was rejected. The book is now available for other reservations.";
+                notificationService.createStudentNotification(student, msg);
 
                 System.out.println("Reservation for book '" + book.getTitle() + "' by student '" + student.getFirstName() + " " + student.getLastName() + "' was rejected and notification sent.");
             }
@@ -471,12 +473,10 @@ public class BookController {
 
             // Send notification to student that their reservation was rejected by admin
             if (student != null) {
-                Notification notification = new Notification();
-                notification.setStudent(student);
-                notification.setMessage(notifyMessage != null && !notifyMessage.trim().isEmpty()
+                String msg = notifyMessage != null && !notifyMessage.trim().isEmpty()
                     ? notifyMessage
-                    : "Your reservation for '" + (book != null ? book.getTitle() : "the book") + "' was rejected by the admin. The book is now available.");
-                notificationRepository.save(notification);
+                    : "Your reservation for '" + (book != null ? book.getTitle() : "the book") + "' was rejected by the admin. The book is now available.";
+                notificationService.createStudentNotification(student, msg);
             }
 
 
@@ -527,11 +527,8 @@ public class BookController {
                     reservationRepository.save(reservation);
                     
                     // Send borrowing notification to student
-                    Notification notification = new Notification();
-                    notification.setStudent(student);
-                    notification.setMessage("You have successfully borrowed '" + book.getTitle() + "'. Due date: " + dueDate.toString());
-                    notificationRepository.save(notification);
-                    
+                    notificationService.createStudentNotification(student, "You have successfully borrowed '" + book.getTitle() + "'. Due date: " + dueDate.toString());
+
                     System.out.println("Book '" + book.getTitle() + "' borrowed by student '" + student.getFirstName() + " " + student.getLastName() + "' with due date: " + dueDate);
                 }
             }
@@ -589,8 +586,8 @@ public class BookController {
                 }
                 
                 notification.setMessage(message);
-                notificationRepository.save(notification);
-                
+                notificationService.createStudentNotification(borrowRecord.getStudent(), message);
+
                 System.out.println("Book '" + book.getTitle() + "' returned by student '" + student.getFirstName() + " " + student.getLastName() + "'");
             }
         } catch (Exception e) {
@@ -612,11 +609,8 @@ public class BookController {
                 borrowRecordRepository.save(borrowRecord);
                 
                 // Send notification to student
-                Notification notification = new Notification();
-                notification.setStudent(borrowRecord.getStudent());
-                notification.setMessage("The due date for your book '" + borrowRecord.getBook().getTitle() + "' has been updated from " + oldDueDate + " to " + newDueDate + ".");
-                notificationRepository.save(notification);
-                
+                notificationService.createStudentNotification(borrowRecord.getStudent(), "The due date for your book '" + borrowRecord.getBook().getTitle() + "' has been updated from " + oldDueDate + " to " + newDueDate + ".");
+
                 System.out.println("Due date extended for book '" + borrowRecord.getBook().getTitle() + "' to " + newDueDate);
             }
         } catch (Exception e) {
@@ -638,8 +632,8 @@ public class BookController {
             long before = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).count();
             System.out.println("Admin notifications before clear: " + before);
 
-            // Use a JPQL delete defined in repository to remove admin notifications efficiently
-            notificationRepository.deleteAdminNotifications();
+            // Use the notification service to clear admin notifications (global)
+            notificationService.clearAllAdminNotifications();
 
             long after = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).count();
             System.out.println("Admin notifications after clear: " + after);
@@ -654,15 +648,23 @@ public class BookController {
      @PreAuthorize("hasRole('ADMIN')")
      @GetMapping("/admin/notifications/count")
      @ResponseBody
-     public Map<String, Object> adminNotificationsCount() {
-         List<Notification> adminNotifs = notificationRepository.findAll().stream().filter(n -> n.getAdmin() != null).collect(Collectors.toList());
+     public Map<String, Object> adminNotificationsCount(Authentication authentication) {
+         Map<String, Object> resp = new HashMap<>();
+         com.example.FinalProject.model.admin currentAdmin = null;
+         if (authentication != null && authentication.isAuthenticated()) {
+             Object principal = authentication.getPrincipal();
+             if (principal instanceof UserDetails) {
+                 String username = ((UserDetails) principal).getUsername();
+                 currentAdmin = adminRepository.findByEmailIgnoreCase(username);
+             }
+         }
+         List<Notification> adminNotifs = notificationService.findAdminNotificationsForAdmin(currentAdmin);
          List<Map<String, Object>> list = adminNotifs.stream().map(n -> {
              Map<String, Object> m = new HashMap<>();
              m.put("id", n.getId());
              m.put("message", n.getMessage());
              return m;
          }).collect(Collectors.toList());
-         Map<String, Object> resp = new HashMap<>();
          resp.put("count", adminNotifs.size());
          resp.put("notifications", list);
          return resp;

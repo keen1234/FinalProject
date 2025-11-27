@@ -39,6 +39,7 @@ import com.example.FinalProject.model.BorrowRecord;
 import com.example.FinalProject.model.Reservation;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.example.FinalProject.service.NotificationService;
 
 @Controller
 public class StudentController {
@@ -65,6 +66,9 @@ public class StudentController {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -263,16 +267,11 @@ public class StudentController {
             model.addAttribute("student", student);
             
             // Get all notifications for this student, ordered by creation date (newest first)
-            List<Notification> notifications = notificationRepository.findByStudentOrderByCreatedAtDesc(student);
+            List<Notification> notifications = notificationService.findStudentNotifications(student);
             model.addAttribute("notifications", notifications);
             
             // Mark all notifications as read when viewed
-            for (Notification notification : notifications) {
-                if (!notification.isRead()) {
-                    notification.setRead(true);
-                    notificationRepository.save(notification);
-                }
-            }
+            notificationService.markAllStudentNotificationsRead(student);
         }
         
         return "student-notifications";
@@ -331,12 +330,8 @@ public class StudentController {
             Student student = userDetails.getStudent();
             
             // Mark all unread notifications as read
-            List<Notification> unreadNotifications = notificationRepository.findByStudentAndIsReadFalse(student);
-            for (Notification notification : unreadNotifications) {
-                notification.setRead(true);
-                notificationRepository.save(notification);
-            }
-            
+            notificationService.markAllStudentNotificationsRead(student);
+
             response.put("status", "success");
             response.put("message", "Notifications marked as read");
         } else {
@@ -356,14 +351,10 @@ public class StudentController {
         Object principal = authentication.getPrincipal();
         if (principal instanceof com.example.FinalProject.model.StudentDetails userDetails) {
             Student student = userDetails.getStudent();
-            // Find all notifications for this student and delete them
-            List<Notification> notifications = notificationRepository.findByStudentOrderByCreatedAtDesc(student);
-            if (notifications != null && !notifications.isEmpty()) {
-                notificationRepository.deleteAll(notifications);
-            }
-        }
-        return "redirect:/student/notifications";
-    }
+            notificationService.clearStudentNotifications(student);
+         }
+         return "redirect:/student/notifications";
+     }
 
 
 }

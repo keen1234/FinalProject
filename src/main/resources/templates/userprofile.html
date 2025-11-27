@@ -20,11 +20,11 @@
             <a href="/login" class="nav-link" sec:authorize="isAnonymous()">Login</a>
             <div class="profile-menu" sec:authorize="isAuthenticated()">
                 <button class="profile-btn" aria-haspopup="true" aria-controls="profileDropdown" aria-expanded="false">
-                    <span class="profile-logo" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</span>
+                    <span class="profile-logo" th:text="${#authentication.principal != null && #authentication.principal.student != null && #authentication.principal.student.firstName != null ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</span>
                 </button>
                 <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
                     <div class="profile-info">
-                        <div class="profile-logo-large" th:text="${#authentication.principal.student.firstName.substring(0,1)}">U</div>
+                        <div class="profile-logo-large" th:text="${#authentication.principal != null && #authentication.principal.student != null && #authentication.principal.student.firstName != null ? #authentication.principal.student.firstName.substring(0,1) : 'U'}">U</div>
                         <strong th:text="${#authentication.principal.student.firstName + ' ' + #authentication.principal.student.lastName}">User Name</strong><br>
                         <span th:text="${#authentication.principal.student.email}">user@email.com</span>
                     </div>
@@ -40,7 +40,7 @@
 <main class="profile-main">
     <section class="profile-section">
         <div class="profile-header">
-            <div class="profile-logo-large" th:text="${student.firstName.substring(0,1)}">U</div>
+            <div class="profile-logo-large" th:text="${student != null && student.firstName != null ? student.firstName.substring(0,1) : 'U'}">U</div>
             <h2 th:text="${student.firstName + ' ' + student.lastName}">User Name</h2>
             <p th:text="${student.email}">user@email.com</p>
             <div class="profile-actions">
